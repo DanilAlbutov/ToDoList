@@ -1,0 +1,15 @@
+import UIKit
+
+final class {{ name }}ViewController: UIViewController {
+    var output: {{ name }}ViewOutput?
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        output?.viewDidLoad()
+    }
+}
+
+extension {{ name }}ViewController: {{ name }}ViewInput {
+    func setupInitialState() {
+    }
+}

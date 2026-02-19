@@ -1,0 +1,31 @@
+import Swinject
+import UIKit
+
+final class {{ name }}Assembly: Assembly {
+    func assemble(container: Container) {
+        // 1. Interactor
+        container.register({{ name }}InteractorInput.self) { r in
+            let interactor = {{ name }}Interactor()
+            return interactor
+        }
+
+        // 2. Router
+        container.register({{ name }}RouterInput.self) { _ in
+            {{ name }}Router()
+        }
+
+        // 3. Presenter
+        container.register({{ name }}ViewOutput.self) { (r, viewController: {{ name }}ViewController) in
+            let presenter = {{ name }}Presenter()
+            presenter.view = viewController
+            presenter.interactor = r.resolve({{ name }}InteractorInput.self)
+            presenter.router = r.resolve({{ name }}RouterInput.self)
+            
+            if let interactor = presenter.interactor as? {{ name }}Interactor {
+                interactor.output = presenter
+            }
+            
+            return presenter
+        }
+    }
+}

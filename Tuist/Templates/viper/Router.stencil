@@ -1,0 +1,4 @@
+import UIKit
+
+final class {{ name }}Router: {{ name }}RouterInput {
+}

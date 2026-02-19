@@ -1,0 +1,15 @@
+import Foundation
+
+final class {{ name }}Presenter {
+    weak var view: {{ name }}ViewInput?
+    var interactor: {{ name }}InteractorInput?
+    var router: {{ name }}RouterInput?
+}
+
+extension {{ name }}Presenter: {{ name }}ViewOutput {
+    func viewDidLoad() {
+        view?.setupInitialState()
+    }
+}
+
+extension {{ name }}Presenter: {{ name }}InteractorOutput { }

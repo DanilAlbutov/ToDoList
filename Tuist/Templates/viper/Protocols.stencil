@@ -1,0 +1,18 @@
+import UIKit
+
+protocol {{ name }}ViewInput: AnyObject {
+    func setupInitialState()
+}
+
+protocol {{ name }}ViewOutput: AnyObject {
+    func viewDidLoad()
+}
+
+protocol {{ name }}InteractorInput: AnyObject {
+}
+
+protocol {{ name }}InteractorOutput: AnyObject {
+}
+
+protocol {{ name }}RouterInput: AnyObject {
+}

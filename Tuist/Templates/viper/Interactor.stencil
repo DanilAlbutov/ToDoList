@@ -1,0 +1,5 @@
+import Foundation
+
+final class {{ name }}Interactor: {{ name }}InteractorInput {
+    weak var output: {{ name }}InteractorOutput?
+}
