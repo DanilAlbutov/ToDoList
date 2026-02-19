@@ -9,6 +9,7 @@ final class HomePresenter {
 extension HomePresenter: HomeViewOutput {
     func viewDidLoad() {
         view?.setupInitialState()
+        interactor?.onLoad()
     }
 }
 

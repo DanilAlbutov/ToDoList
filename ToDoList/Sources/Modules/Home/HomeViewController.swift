@@ -11,5 +11,6 @@ final class HomeViewController: UIViewController {
 
 extension HomeViewController: HomeViewInput {
     func setupInitialState() {
+        view.backgroundColor = .red
     }
 }

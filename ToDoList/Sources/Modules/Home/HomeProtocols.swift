@@ -9,6 +9,7 @@ protocol HomeViewOutput: AnyObject {
 }
 
 protocol HomeInteractorInput: AnyObject {
+    func onLoad()
 }
 
 protocol HomeInteractorOutput: AnyObject {

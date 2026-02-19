@@ -6,8 +6,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
     
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+        AppDIContainer.shared.registerAssembly()
         configureWindow()        
+        startFlow()
         return true
+    }
+    
+    private func startFlow() {
+        guard let startViewController = HomeAssembly.createModule() else { return assertionFailure("HomeAssembly.createModule() return nil") }
+        window?.rootViewController = UINavigationController(rootViewController: startViewController)            
     }
     
     private func configureWindow() {
@@ -15,7 +22,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             let window = UIWindow(windowScene: windowScene)            
             let viewController = UIViewController()
             viewController.view.backgroundColor = .red
-            window.rootViewController = UINavigationController(rootViewController: viewController)            
+            
             self.window = window
             window.makeKeyAndVisible()
         }
