@@ -26,7 +26,7 @@ extension HomePresenter: HomeViewOutput {
     }
 
     func checkButtonTapped(at indexPath: IndexPath) {
-        guard indexPath.item < items.count - 1 else {
+        guard indexPath.item < items.count else {
             return
         }
         let isSelected = !self.items[indexPath.item].isCompleted

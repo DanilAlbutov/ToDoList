@@ -16,8 +16,10 @@ struct TaskCollectionViewCellConfiguration: Hashable {
     var isCompleted: Bool
 }
 
-final class TaskCollectionViewCell: UICollectionViewCell {
+final class TaskCollectionViewCell: UICollectionViewListCell {
     var onCheckButtonTapped: (() -> Void)?
+    
+    typealias Configuration = TaskCollectionViewCellConfiguration
     
     override var isSelected: Bool {
         didSet {
@@ -25,24 +27,11 @@ final class TaskCollectionViewCell: UICollectionViewCell {
         }
     }
     
+    private var configuration: Configuration?
+    
     // MARK: - UI
     
-    private let checkButton: UIButton = {
-        let button = UIButton(type: .custom)
-        button.layer.cornerRadius = 14
-        button.layer.borderWidth = 2
-        button.layer.borderColor = UIColor.systemGray3.cgColor
-        button.backgroundColor = .clear
-        return button
-    }()
-    
-    private let checkImageView: UIImageView = {
-        let iv = UIImageView()
-        iv.image = UIImage(systemName: "checkmark")
-        iv.tintColor = .black
-        iv.isHidden = true
-        return iv
-    }()
+    private let checkButton = CheckMarkButton(type: .custom)
     
     private let titleLabel: UILabel = {
         let label = UILabel()
@@ -94,7 +83,8 @@ final class TaskCollectionViewCell: UICollectionViewCell {
     // MARK: - Configuration
     
     func configure(with model: TaskCollectionViewCellConfiguration) {
-        titleLabel.text = model.title
+        configuration = model
+        titleLabel.setAttributedText(model.title)
         descriptionLabel.text = model.description
         dateLabel.text = model.date
     }
@@ -105,7 +95,6 @@ final class TaskCollectionViewCell: UICollectionViewCell {
         checkButton.addTarget(self, action: #selector(handleCheckButtonTap), for: .touchUpInside)
 
         contentView.addSubview(checkButton)
-        checkButton.addSubview(checkImageView)
         
         textStack.axis = .vertical
         textStack.spacing = 4
@@ -130,11 +119,6 @@ final class TaskCollectionViewCell: UICollectionViewCell {
             $0.size.equalTo(28)
         }
         
-        checkImageView.snp.makeConstraints {
-            $0.center.equalToSuperview()
-            $0.size.equalTo(14)
-        }        
-        
         textStack.snp.makeConstraints {
             $0.top.equalToSuperview().offset(16)
             $0.left.equalTo(checkButton.snp.right).offset(8)
@@ -144,23 +128,24 @@ final class TaskCollectionViewCell: UICollectionViewCell {
     }
     
     private func updateCompletedState(_ completed: Bool) {        
-        checkButton.layer.borderColor = completed ? UIColor.systemYellow.cgColor : UIColor.systemGray3.cgColor
-        checkButton.backgroundColor = completed ? .systemYellow : .clear
-            checkImageView.isHidden = !completed
+        checkButton.setCompleted(completed)
         descriptionLabel.textColor = completed ? .systemGray : .systemGray2
-        if completed {
-            let attributed = NSAttributedString(
-                string: titleLabel.text ?? "",
-                attributes: [
-                    .strikethroughStyle: NSUnderlineStyle.single.rawValue,
-                    .foregroundColor: UIColor.systemGray
-                ]
-            )
-            titleLabel.attributedText = attributed            
-        } else {            
-            titleLabel.attributedText = nil
-        }
+        titleLabel.setAttributedText(configuration?.title ?? "", withStrikethrough: completed)
     }
 }
 
-class 
+fileprivate extension UILabel {
+    func setAttributedText(_ text: String, withStrikethrough: Bool = false) {
+        var attributes: [NSAttributedString.Key : Any] = [
+            .foregroundColor: UIColor.systemGray
+        ]
+        if withStrikethrough {
+            attributes[.strikethroughStyle] = NSUnderlineStyle.single.rawValue
+        }
+        let attributedString = NSAttributedString(
+            string: text,
+            attributes: attributes
+        )
+        attributedText = attributedString
+    }
+}
