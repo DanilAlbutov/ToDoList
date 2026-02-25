@@ -8,13 +8,14 @@ let project = Project(
             destinations: .iOS,
             product: .app,
             bundleId: "com.albutov.ToDoList",
+            deploymentTargets: .iOS("18.0"),
             infoPlist: .extendingDefault(with: [
                 "UILaunchStoryboardName": "LaunchScreen",
-                // Отключаем манифест сцен
                 "UIApplicationSceneManifest": [
                     "UIApplicationSupportsMultipleScenes": false,
                     "UISceneConfigurations": [:]
-                ]
+                ],
+                "UIUserInterfaceStyle": "Light",
             ]),
             sources: ["ToDoList/Sources/**"], 
             resources: ["ToDoList/Resources/**"],

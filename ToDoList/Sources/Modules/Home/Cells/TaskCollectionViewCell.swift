@@ -21,12 +21,6 @@ final class TaskCollectionViewCell: UICollectionViewListCell {
     
     typealias Configuration = TaskCollectionViewCellConfiguration
     
-    override var isSelected: Bool {
-        didSet {
-            updateCompletedState(isSelected)
-        }
-    }
-    
     private var configuration: Configuration?
     
     // MARK: - UI
@@ -54,12 +48,6 @@ final class TaskCollectionViewCell: UICollectionViewListCell {
         label.font = .systemFont(ofSize: 13)
         label.textColor = .systemGray3
         return label
-    }()    
-    
-    private let separatorView: UIView = {
-        let view = UIView()
-        view.backgroundColor = UIColor.systemGray5
-        return view
     }()
     
     private let textStack = UIStackView()
@@ -82,29 +70,28 @@ final class TaskCollectionViewCell: UICollectionViewListCell {
     }
     // MARK: - Configuration
     
-    func configure(with model: TaskCollectionViewCellConfiguration) {
+    func configure(with model: Configuration) {
         configuration = model
         titleLabel.setAttributedText(model.title)
         descriptionLabel.text = model.description
         dateLabel.text = model.date
+        updateCompletedState(model.isCompleted)
     }
     
     // MARK: - Setup
     
     private func setupUI() {
-        checkButton.addTarget(self, action: #selector(handleCheckButtonTap), for: .touchUpInside)
-
+        contentView.backgroundColor = .black
         contentView.addSubview(checkButton)
+        checkButton.addTarget(self, action: #selector(handleCheckButtonTap), for: .touchUpInside)
         
         textStack.axis = .vertical
-        textStack.spacing = 4
-        
+        textStack.spacing = 4        
         textStack.addArrangedSubview(titleLabel)
         textStack.addArrangedSubview(descriptionLabel)
         textStack.addArrangedSubview(dateLabel)
         
         contentView.addSubview(textStack)
-        contentView.addSubview(separatorView)
     }
 
     @objc

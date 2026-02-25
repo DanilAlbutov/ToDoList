@@ -31,13 +31,18 @@ final class HomeInteractor: HomeInteractorInput {
                         limit: storedItems.count
                     )
                     self?.output?.listLoaded(model: response)
+                } else {
+                    // TODO: - present error
                 }
-                print("-- error \(error)")
             }
         }
     }
 
     func saveTaskSelection(taskID: String, isSelected: Bool) {
         taskItemsStorage?.updateCompletion(for: taskID, isCompleted: isSelected)
+    }
+
+    func deleteTask(taskID: String) {
+        taskItemsStorage?.deleteItem(with: taskID)
     }
 }

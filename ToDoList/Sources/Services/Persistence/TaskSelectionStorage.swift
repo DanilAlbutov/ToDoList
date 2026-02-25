@@ -5,6 +5,7 @@ protocol TaskItemsStorage {
     func loadItems() -> [ToDoListResponse.Item]
     func save(items: [ToDoListResponse.Item], overrideOldCompletion: Bool)
     func updateCompletion(for taskID: String, isCompleted: Bool)
+    func deleteItem(with taskID: String)
 }
 
 final class CoreDataTaskItemsStorage: TaskItemsStorage {
@@ -116,6 +117,35 @@ final class CoreDataTaskItemsStorage: TaskItemsStorage {
             } catch {
                 context.rollback()
                 print("Failed to update task completion: \(error)")
+            }
+        }
+    }
+
+    func deleteItem(with taskID: String) {
+        guard let id = Int64(taskID) else {
+            return
+        }
+
+        let context = coreDataStack.viewContext
+
+        context.performAndWait {
+            do {
+                let request = NSFetchRequest<NSManagedObject>(entityName: Entity.name)
+                request.fetchLimit = 1
+                request.predicate = NSPredicate(format: "%K == %d", Attribute.id, id)
+
+                guard let object = try context.fetch(request).first else {
+                    return
+                }
+
+                context.delete(object)
+
+                if context.hasChanges {
+                    try context.save()
+                }
+            } catch {
+                context.rollback()
+                print("Failed to delete task item: \(error)")
             }
         }
     }

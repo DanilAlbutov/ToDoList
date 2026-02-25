@@ -22,24 +22,38 @@ extension HomePresenter: HomeViewOutput {
         }
 
         items[index].isCompleted = isSelected
-        view?.displayList(items: items)
+        view?.updateCompletionStateForItem(with: taskID, for: items)
     }
 
-    func checkButtonTapped(at indexPath: IndexPath) {
-        guard indexPath.item < items.count else {
+    func checkButtonTapped(taskID: String) {
+        guard let index = items.firstIndex(where: { $0.id == taskID }) else {
             return
         }
-        let isSelected = !self.items[indexPath.item].isCompleted
-        self.items[indexPath.item].isCompleted = isSelected
+        let isSelected = !items[index].isCompleted
+        taskSelectionDidChange(taskID: taskID, isSelected: isSelected)
+    }
 
-        if isSelected {
-            view?.selectItem(at: indexPath)
-        } else {
-            view?.deselectItem(at: indexPath)
+    func didTapEdit(taskID: String) {
+        router?.openEditTask(taskID: taskID)
+    }
+
+    func didTapShare(taskID: String) {
+        guard let item = items.first(where: { $0.id == taskID }) else {
+            return
         }
 
-        let taskID = self.items[indexPath.item].id
-        taskSelectionDidChange(taskID: taskID, isSelected: isSelected)
+        let text = "\(item.title)\n\n\(item.description)"
+        view?.presentShareSheet(text: text)
+    }
+
+    func didTapDelete(taskID: String) {
+        guard let index = items.firstIndex(where: { $0.id == taskID }) else {
+            return
+        }
+
+        items.remove(at: index)
+        interactor?.deleteTask(taskID: taskID)
+        view?.displayList(items: items)
     }
 }
 

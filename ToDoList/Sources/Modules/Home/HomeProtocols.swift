@@ -3,19 +3,26 @@ import UIKit
 protocol HomeViewInput: AnyObject {
     func setupInitialState()
     func displayList(items: [TaskCollectionViewCellConfiguration])
-    func selectItem(at indexPath: IndexPath)
-    func deselectItem(at indexPath: IndexPath)
+    func updateCompletionStateForItem(
+        with id: String,
+        for items: [TaskCollectionViewCellConfiguration]
+    )
+    func presentShareSheet(text: String)
 }
 
 protocol HomeViewOutput: AnyObject {
     func viewDidLoad()
     func taskSelectionDidChange(taskID: String, isSelected: Bool)
-    func checkButtonTapped(at indexPath: IndexPath)
+    func checkButtonTapped(taskID: String)
+    func didTapEdit(taskID: String)
+    func didTapShare(taskID: String)
+    func didTapDelete(taskID: String)
 }
 
 protocol HomeInteractorInput: AnyObject {
     func onLoad()
     func saveTaskSelection(taskID: String, isSelected: Bool)
+    func deleteTask(taskID: String)
 }
 
 protocol HomeInteractorOutput: AnyObject {
@@ -23,4 +30,5 @@ protocol HomeInteractorOutput: AnyObject {
 }
 
 protocol HomeRouterInput: AnyObject {
+    func openEditTask(taskID: String)
 }
