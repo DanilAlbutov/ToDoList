@@ -3,6 +3,7 @@ import Foundation
 final class HomeInteractor: HomeInteractorInput {
     weak var output: HomeInteractorOutput?
     var networkService: TDLNetworkServiceI?
+    var taskItemsStorage: TaskItemsStorage?
     
     // MARK: - HomeInteractorInput
     
@@ -10,10 +11,33 @@ final class HomeInteractor: HomeInteractorInput {
         networkService?.getList { [weak self] result in
             switch result {
             case .success(let list):
-                print("-- success \(list)")
+                let needOverride = self?.taskItemsStorage?.loadItems().isEmpty == true
+                self?.taskItemsStorage?.save(items: list.todos, overrideOldCompletion: needOverride)
+                let storedItems = self?.taskItemsStorage?.loadItems() ?? list.todos
+                let response = ToDoListResponse(
+                    todos: storedItems,
+                    total: list.total,
+                    skip: list.skip,
+                    limit: list.limit
+                )
+                self?.output?.listLoaded(model: response)
             case .failure(let error):
+                let storedItems = self?.taskItemsStorage?.loadItems() ?? []
+                if !storedItems.isEmpty {
+                    let response = ToDoListResponse(
+                        todos: storedItems,
+                        total: storedItems.count,
+                        skip: .zero,
+                        limit: storedItems.count
+                    )
+                    self?.output?.listLoaded(model: response)
+                }
                 print("-- error \(error)")
             }
         }
+    }
+
+    func saveTaskSelection(taskID: String, isSelected: Bool) {
+        taskItemsStorage?.updateCompletion(for: taskID, isCompleted: isSelected)
     }
 }

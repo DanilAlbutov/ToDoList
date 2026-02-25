@@ -7,7 +7,7 @@
 
 import Foundation
 
-// MARK: - Welcome
+// MARK: - ToDoListResponse
 struct ToDoListResponse: Codable {
     struct Item: Codable {
         let id: Int
@@ -24,6 +24,3 @@ struct ToDoListResponse: Codable {
     let todos: [Item]
     let total, skip, limit: Int
 }
-
-// MARK: - Todo
-

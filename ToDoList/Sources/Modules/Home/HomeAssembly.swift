@@ -10,10 +10,17 @@ final class HomeAssembly: Assembly {
         }
         
         container.register(TDLNetworkServiceI.self) { _ in TDLNetworkService() }
-        
+        container.register(CoreDataStack.self) { _ in CoreDataStack() }
+            .inObjectScope(.container)
+        container.register(TaskItemsStorage.self) { resolver in
+            let coreDataStack = resolver.resolve(CoreDataStack.self) ?? CoreDataStack()
+            return CoreDataTaskItemsStorage(coreDataStack: coreDataStack)
+        }.inObjectScope(.container)
+
         container.register(HomeInteractorInput.self) { resolver in 
             let interactor = HomeInteractor() 
             interactor.networkService = resolver.resolve(TDLNetworkServiceI.self)
+            interactor.taskItemsStorage = resolver.resolve(TaskItemsStorage.self)
             return interactor
         }
         container.register(HomeRouterInput.self) { _ in HomeRouter() }
