@@ -37,6 +37,10 @@ extension HomePresenter: HomeViewOutput {
         view?.setupInitialState()
         interactor?.onLoad()
     }
+    
+    func viewWillAppear() {
+        interactor?.loadStoredTasks()
+    }
 
     func searchTextDidChange(_ text: String) {
         currentSearchText = text
@@ -60,7 +64,7 @@ extension HomePresenter: HomeViewOutput {
         guard visibleItems.contains(where: { $0.id == taskID }) else {
             return
         }
-        view?.updateCompletionStateForItem(with: taskID, for: visibleItems)
+        view?.updateItem(with: taskID, for: visibleItems)
     }
 
     func checkButtonTapped(taskID: String) {
@@ -68,9 +72,13 @@ extension HomePresenter: HomeViewOutput {
         let isSelected = !allItems[index].isCompleted
         taskSelectionDidChange(taskID: taskID, isSelected: isSelected)
     }
+    
+    func didTapCreateTask() {
+        router?.openCreateTask(moduleOutput: self)
+    }
 
     func didTapEdit(taskID: String) {
-        router?.openEditTask(taskID: taskID)
+        router?.openEditTask(taskID: taskID, moduleOutput: self)
     }
 
     func didTapShare(taskID: String) {
@@ -98,13 +106,24 @@ extension HomePresenter: HomeInteractorOutput {
     }
 }
 
+extension HomePresenter: DetailsModuleOutput {
+    func detailsModuleDidFinishCreatingTask() {
+        interactor?.loadStoredTasks()
+    }
+    
+    func detailsModuleDidFinishEditing(taskWith Id: String) {
+        interactor?.loadStoredTasks()
+        view?.updateItem(with: Id, for: nil)
+    }
+}
+
 fileprivate extension ToDoListResponse {
     var cellConfigurations: [TaskCollectionViewCellConfiguration] {
         todos.map {
-            return .init(
+            .init(
                 id: "\($0.id)",
                 title: $0.todo,
-                description: "User id: \($0.userID)",
+                description: $0.detailsText ?? "User: \($0.userID)",
                 date: Date().formattedString,
                 isCompleted: $0.completed
             )

@@ -2,6 +2,8 @@ import UIKit
 import SnapKit
 
 final class HomeBottomBarView: UIView {
+    var onComposeTapped: (() -> Void)?
+
     private let tasksCountLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 11, weight: .medium)
@@ -31,13 +33,13 @@ final class HomeBottomBarView: UIView {
 
     func updateTasksCount(_ count: Int) {
         tasksCountLabel.text = "\(count) Задач"
-        editButton.isHidden = count == 0
     }
 
     private func setupUI() {
         backgroundColor = UIColor(white: 0.14, alpha: 1)
         addSubview(tasksCountLabel)
         addSubview(editButton)
+        editButton.addTarget(self, action: #selector(handleComposeTap), for: .touchUpInside)
     }
 
     private func setupLayout() {
@@ -51,5 +53,10 @@ final class HomeBottomBarView: UIView {
             $0.right.equalToSuperview().inset(28)
             $0.size.equalTo(34)
         }
+    }
+
+    @objc
+    private func handleComposeTap() {
+        onComposeTapped?()
     }
 }

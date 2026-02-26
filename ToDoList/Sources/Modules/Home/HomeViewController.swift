@@ -40,6 +40,11 @@ final class HomeViewController: UIViewController, UICollectionViewDelegate {
         output?.viewDidLoad()
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        output?.viewWillAppear()
+    }
+    
     private func setupCollectionView() {
         view.addSubview(collectionView)
         collectionView.register(
@@ -57,6 +62,9 @@ final class HomeViewController: UIViewController, UICollectionViewDelegate {
 
     private func setupBottomBar() {
         view.addSubview(bottomBarView)
+        bottomBarView.onComposeTapped = { [weak self] in
+            self?.output?.didTapCreateTask()
+        }
 
         bottomBarView.snp.makeConstraints {
             $0.horizontalEdges.equalTo(view.safeAreaLayoutGuide.snp.horizontalEdges)
@@ -111,12 +119,15 @@ extension HomeViewController: HomeViewInput {
         dataSource.apply(snapshot)
     }
     
-    func updateCompletionStateForItem(
+    func updateItem(
         with id: String,
-        for items: [TaskCollectionViewCellConfiguration]
+        for items: [TaskCollectionViewCellConfiguration]?
     ) {
-        cellsConfigurations = items
-        updateTasksCount(items.count)
+        if let itemsToUpdate = items {
+            cellsConfigurations = itemsToUpdate
+            updateTasksCount(itemsToUpdate.count)
+        }
+        
         var snapshot = dataSource.snapshot()
         snapshot.reconfigureItems([id])
         dataSource.apply(snapshot, animatingDifferences: true)

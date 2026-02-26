@@ -24,9 +24,18 @@ final class AppDIContainer {
         return container.resolve(serviceType, name: nil, argument: argument)
     }
     
+    func resolve<Service, Arg1, Arg2>(
+        _ serviceType: Service.Type,
+        arguments: Arg1,
+        _ secondArgument: Arg2
+    ) -> Service? {
+        return container.resolve(serviceType, name: nil, arguments: arguments, secondArgument)
+    }
+    
     func registerAssembly() {
         let assemblies: [Assembly] = [
-            HomeAssembly()
+            HomeAssembly(),
+            DetailsAssembly()
         ]                
         assemblies.forEach { $0.assemble(container: container) }
     }

@@ -37,6 +37,17 @@ final class HomeInteractor: HomeInteractorInput {
             }
         }
     }
+    
+    func loadStoredTasks() {
+        let storedItems = taskItemsStorage?.loadItems() ?? []
+        let response = ToDoListResponse(
+            todos: storedItems,
+            total: storedItems.count,
+            skip: .zero,
+            limit: storedItems.count
+        )
+        output?.listLoaded(model: response)
+    }
 
     func saveTaskSelection(taskID: String, isSelected: Bool) {
         taskItemsStorage?.updateCompletion(for: taskID, isCompleted: isSelected)

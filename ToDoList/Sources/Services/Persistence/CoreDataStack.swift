@@ -17,6 +17,11 @@ final class CoreDataStack {
             description.url = URL(fileURLWithPath: "/dev/null")
             persistentContainer.persistentStoreDescriptions = [description]
         }
+        
+        persistentContainer.persistentStoreDescriptions.forEach {
+            $0.shouldMigrateStoreAutomatically = true
+            $0.shouldInferMappingModelAutomatically = true
+        }
 
         persistentContainer.loadPersistentStores { _, error in
             if let error {
@@ -44,6 +49,11 @@ final class CoreDataStack {
         todoAttribute.name = CoreDataTaskItemsStorage.Attribute.todo
         todoAttribute.attributeType = .stringAttributeType
         todoAttribute.isOptional = false
+        
+        let detailsTextAttribute = NSAttributeDescription()
+        detailsTextAttribute.name = CoreDataTaskItemsStorage.Attribute.detailsText
+        detailsTextAttribute.attributeType = .stringAttributeType
+        detailsTextAttribute.isOptional = true
 
         let completedAttribute = NSAttributeDescription()
         completedAttribute.name = CoreDataTaskItemsStorage.Attribute.completed
@@ -55,7 +65,13 @@ final class CoreDataStack {
         userIDAttribute.attributeType = .integer64AttributeType
         userIDAttribute.isOptional = false
 
-        entity.properties = [idAttribute, todoAttribute, completedAttribute, userIDAttribute]
+        entity.properties = [
+            idAttribute,
+            todoAttribute,
+            detailsTextAttribute,
+            completedAttribute,
+            userIDAttribute
+        ]
 
         let uniqueConstraint = [CoreDataTaskItemsStorage.Attribute.id]
         entity.uniquenessConstraints = [uniqueConstraint]
