@@ -6,51 +6,21 @@ final class DetailsViewController: UIViewController, UITextViewDelegate {
     
     private let scrollView = UIScrollView()
     private let contentView = UIView()
-    private let titlePlaceholder = "Название"
-    private let descriptionPlaceholder = "Описание"
     
-    private let titleTextView: UITextView = {
-        let textView = UITextView()
-        textView.backgroundColor = .clear
-        textView.textColor = ToDoListAsset.Assets.primaryText.color
-        textView.font = .systemFont(ofSize: 34, weight: .bold)
-        textView.isScrollEnabled = false
-        textView.textContainerInset = .zero
-        textView.textContainer.lineFragmentPadding = .zero
-        return textView
-    }()
-
-    private let titlePlaceholderLabel: UILabel = {
-        let label = UILabel()
-        label.textColor = ToDoListAsset.Assets.secondaryText.color
-        label.font = .systemFont(ofSize: 34, weight: .bold)
-        return label
-    }()
+    private let titleTextView = TDLPlaceholderTextView(
+        placeholder: "Название",
+        style: .h1Secondary
+    )
     
-    private let dateLabel: UILabel = {
-        let label = UILabel()
-        label.font = .systemFont(ofSize: 16, weight: .regular)
-        label.textColor = ToDoListAsset.Assets.secondaryText.color
-        return label
-    }()
+    private let dateLabel = TDLLabel(
+        style: .bodySecondary,
+        textColor: .secondaryText
+    )
     
-    private let descriptionTextView: UITextView = {
-        let textView = UITextView()
-        textView.backgroundColor = .clear
-        textView.textColor = ToDoListAsset.Assets.primaryText.color
-        textView.font = .systemFont(ofSize: 16, weight: .regular)
-        textView.isScrollEnabled = false
-        textView.textContainerInset = .zero
-        textView.textContainer.lineFragmentPadding = .zero
-        return textView
-    }()
-
-    private let descriptionPlaceholderLabel: UILabel = {
-        let label = UILabel()
-        label.textColor = ToDoListAsset.Assets.secondaryText.color
-        label.font = .systemFont(ofSize: 16, weight: .regular)
-        return label
-    }()
+    private let descriptionTextView = TDLPlaceholderTextView(
+        placeholder: "Описание",
+        style: .bodyPrimary
+    )
     
     private lazy var saveBarButton = UIBarButtonItem(
         title: "Сохранить",
@@ -70,11 +40,6 @@ final class DetailsViewController: UIViewController, UITextViewDelegate {
         NotificationCenter.default.removeObserver(self)
     }
     
-    private func updatePlaceholders() {
-        titlePlaceholderLabel.isHidden = !(titleTextView.text ?? "").trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-        descriptionPlaceholderLabel.isHidden = !(descriptionTextView.text ?? "").trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-    }
-
     private func setupKeyboardHandling() {
         NotificationCenter.default.addObserver(
             self,
@@ -117,14 +82,14 @@ final class DetailsViewController: UIViewController, UITextViewDelegate {
         navigationItem.largeTitleDisplayMode = .never
         navigationItem.rightBarButtonItem = saveBarButton
         navigationItem.backButtonTitle = "Назад"
-        navigationController?.navigationBar.tintColor = ToDoListAsset.Assets.yellow.color
-        saveBarButton.tintColor = ToDoListAsset.Assets.yellow.color
+        navigationController?.navigationBar.tintColor = .appYellow
+        saveBarButton.tintColor = .appYellow
         saveBarButton.setTitleTextAttributes(
-            [.foregroundColor: ToDoListAsset.Assets.yellow.color],
+            [.foregroundColor: UIColor.appYellow],
             for: .normal
         )
         saveBarButton.setTitleTextAttributes(
-            [.foregroundColor: ToDoListAsset.Assets.secondaryText.color],
+            [.foregroundColor: UIColor.secondaryText],
             for: .disabled
         )
         
@@ -146,14 +111,6 @@ final class DetailsViewController: UIViewController, UITextViewDelegate {
             $0.horizontalEdges.equalTo(contentView).inset(16)
         }
         
-        titleTextView.addSubview(titlePlaceholderLabel)
-        titlePlaceholderLabel.text = titlePlaceholder
-        titlePlaceholderLabel.snp.makeConstraints {
-            $0.top.equalTo(titleTextView.textContainerInset.top)
-            $0.left.equalTo(titleTextView.textContainerInset.left + titleTextView.textContainer.lineFragmentPadding)
-            $0.right.lessThanOrEqualToSuperview()
-        }
-        
         contentView.addSubview(dateLabel)
         dateLabel.snp.makeConstraints {
             $0.top.equalTo(titleTextView.snp.bottom).offset(8)
@@ -169,16 +126,6 @@ final class DetailsViewController: UIViewController, UITextViewDelegate {
             $0.bottom.equalTo(contentView.snp.bottom).inset(16)
             $0.height.greaterThanOrEqualTo(400)
         }
-        
-        descriptionTextView.addSubview(descriptionPlaceholderLabel)
-        descriptionPlaceholderLabel.text = descriptionPlaceholder
-        descriptionPlaceholderLabel.snp.makeConstraints {
-            $0.top.equalTo(descriptionTextView.textContainerInset.top)
-            $0.left.equalTo(descriptionTextView.textContainerInset.left + descriptionTextView.textContainer.lineFragmentPadding)
-            $0.right.lessThanOrEqualToSuperview()
-        }
-        
-        updatePlaceholders()        
     }
     
     @objc
@@ -190,7 +137,6 @@ final class DetailsViewController: UIViewController, UITextViewDelegate {
     }
     
     func textViewDidChange(_ textView: UITextView) {
-        updatePlaceholders()
         if textView === titleTextView {
             output?.titleDidChange(textView.text)
         }
@@ -203,7 +149,6 @@ extension DetailsViewController: DetailsViewInput {
         descriptionTextView.text = viewModel.description
         dateLabel.text = viewModel.dateText
         saveBarButton.title = viewModel.saveButtonTitle
-        updatePlaceholders()
     }
     
     func updateSaveButton(isEnabled: Bool) {

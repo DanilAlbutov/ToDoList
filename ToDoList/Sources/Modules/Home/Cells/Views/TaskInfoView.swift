@@ -18,9 +18,18 @@ final class TaskInfoView: UIView {
         let isCompleted: Bool
     }
 
-    private let titleLabel = UILabel()
-    private let descriptionLabel = UILabel()
-    private let dateLabel = UILabel()
+    private let titleLabel = TDLLabel(
+        style: .bodySemiboldPrimary,
+        textColor: .primaryText
+    )
+    private let descriptionLabel = TDLLabel(
+        style: .captionSecondary,
+        textColor: .secondaryText
+    )
+    private let dateLabel = TDLLabel(
+        style: .captionSecondary,
+        textColor: .secondaryText
+    )
     private let textStack = UIStackView()
     
     override var intrinsicContentSize: CGSize {
@@ -54,23 +63,18 @@ final class TaskInfoView: UIView {
             $0.edges.equalToSuperview()
         }
         
-        textStack.addArrangedSubview(titleLabel)
-        titleLabel.numberOfLines = 1
-        titleLabel.font = .systemFont(ofSize: 16, weight: .semibold)
-        
-        textStack.addArrangedSubview(descriptionLabel)
-        descriptionLabel.numberOfLines = 2
-        descriptionLabel.font = .systemFont(ofSize: 12, weight: .regular)
-        
+        textStack.addArrangedSubview(titleLabel)        
+        textStack.addArrangedSubview(descriptionLabel)        
         textStack.addArrangedSubview(dateLabel)
-        dateLabel.font = .systemFont(ofSize: 12, weight: .regular)        
     }
     
     private func updateColors(isCompleted: Bool) {
-        descriptionLabel.textColor = isCompleted
-        ? ToDoListAsset.Assets.secondaryText.color
-        : ToDoListAsset.Assets.primaryText.color
-        dateLabel.textColor = ToDoListAsset.Assets.secondaryText.color
+        descriptionLabel.apply(
+            textColor: isCompleted
+            ? .secondaryText
+            : .primaryText
+        )
+        dateLabel.apply(textColor: .secondaryText)
     }
 }
 
@@ -79,11 +83,9 @@ private extension UILabel {
         _ text: String,
         withStrikethrough: Bool = false
     ) {
-        let baseFont: UIFont = .systemFont(ofSize: 16, weight: .bold)
+        let baseFont: UIFont = TDLLabelStyle.bodySemiboldPrimary.font
 
-        let color: UIColor = withStrikethrough
-        ? ToDoListAsset.Assets.secondaryText.color
-        : ToDoListAsset.Assets.primaryText.color
+        let color: UIColor = withStrikethrough ? .secondaryText : .primaryText
 
         var attributes: [NSAttributedString.Key: Any] = [
             .foregroundColor: color,

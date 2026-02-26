@@ -30,7 +30,7 @@ final class CheckMarkButton: UIButton {
     private func setupAppearance() {
         layer.cornerRadius = 14
         layer.borderWidth = 2
-        layer.borderColor = ToDoListAsset.Assets.border.color.cgColor
+        layer.borderColor = UIColor.border.cgColor
     }
 
     private func setupLayout() {

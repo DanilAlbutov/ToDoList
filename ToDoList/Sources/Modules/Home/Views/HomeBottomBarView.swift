@@ -4,13 +4,10 @@ import SnapKit
 final class HomeBottomBarView: UIView {
     var onComposeTapped: (() -> Void)?
 
-    private let tasksCountLabel: UILabel = {
-        let label = UILabel()
-        label.font = .systemFont(ofSize: 11, weight: .medium)
-        label.textColor = .white
-        label.textAlignment = .center
-        return label
-    }()
+    private let tasksCountLabel = TDLLabel(
+        style: .captionMediumInverse,
+        textColor: .white
+    )
 
     private let editButton: UIButton = {
         let button = UIButton(type: .system)

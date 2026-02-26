@@ -15,8 +15,8 @@ final class HomeViewController: UIViewController, UICollectionViewDelegate {
         $0.searchBar.searchBarStyle = .minimal
         $0.searchResultsUpdater = self
         $0.searchBar.delegate = self
-        $0.searchBar.tintColor = ToDoListAsset.Assets.primaryText.color
-        $0.searchBar.searchTextField.textColor = ToDoListAsset.Assets.primaryText.color
+        $0.searchBar.tintColor = .primaryText
+        $0.searchBar.searchTextField.textColor = .primaryText
         return $0
     }(UISearchController(searchResultsController: nil))
     
@@ -75,7 +75,7 @@ final class HomeViewController: UIViewController, UICollectionViewDelegate {
 
         view.addSubview(loader)
         loader.hidesWhenStopped = true
-        loader.color = ToDoListAsset.Assets.primaryText.color
+        loader.color = .primaryText
         loader.snp.makeConstraints {
             $0.center.equalTo(collectionView.snp.center)
         }

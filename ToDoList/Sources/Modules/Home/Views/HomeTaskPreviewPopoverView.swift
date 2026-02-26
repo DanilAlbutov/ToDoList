@@ -37,7 +37,7 @@ final class HomeTaskPreviewPopoverView: UIViewController {
     }
 
     private func setupUI() {
-        view.backgroundColor = ToDoListAsset.Assets.gray.color
+        view.backgroundColor = .appGray
         view.layer.cornerRadius = 12
         view.clipsToBounds = true
 

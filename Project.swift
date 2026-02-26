@@ -17,8 +17,24 @@ let project = Project(
                 ],
                 "UIUserInterfaceStyle": "Light",
             ]),
-            sources: ["ToDoList/Sources/**"], 
+            sources: [
+                "ToDoList/Sources/**",
+                "Derived/Sources/**",
+                "Generated/Sources/**"
+            ],
             resources: ["ToDoList/Resources/**"],
+            scripts: [
+                .pre(
+                    script: "\"$SRCROOT/scripts/generate_uicolor_assets.sh\"",
+                    name: "Generate UIColor Extension",
+                    inputPaths: [
+                        "$SRCROOT/Derived/Sources/TuistAssets+ToDoList.swift"
+                    ],
+                    outputPaths: [
+                        "$SRCROOT/Generated/Sources/UIColor+AppColors.generated.swift"
+                    ]
+                )
+            ],
             dependencies: [
                 .external(name: "Alamofire"),
                 .external(name: "SnapKit"),

@@ -68,3 +68,4 @@ Derived/
 
 ### Tuist managed dependencies ###
 Tuist/.build
+Generated/Sources/UIColor+AppColors.generated.swift

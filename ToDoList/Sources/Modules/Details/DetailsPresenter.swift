@@ -4,21 +4,12 @@ final class DetailsPresenter {
     
     enum Mode {
         case edit(taskId: String), create
-        var taskId: String? {
-            switch self {
-            case .edit(let taskId):
-                return taskId
-            case .create:
-                return nil
-            }
-        }
     }
+    
     weak var view: DetailsViewInput?
     var interactor: DetailsInteractorInput?
     var router: DetailsRouterInput?
-    weak var moduleOutput: DetailsModuleOutput?
-    
-    
+    weak var moduleOutput: DetailsModuleOutput?  
     
     var mode: Mode?
     private var currentTask: TaskItem?
@@ -55,22 +46,13 @@ extension DetailsPresenter: DetailsViewOutput {
 extension DetailsPresenter: DetailsInteractorOutput {
     func didLoadTask(item: TaskItem?) {
         currentTask = item
-        let viewModel: DetailsViewModel
-        if case .edit = mode {
-            viewModel = .init(
-                title: item?.todo ?? "",
-                description: item?.detailsText ?? "",
-                dateText: (item?.createdAt ?? Date()).formattedString,
-                saveButtonTitle: "Сохранить"
-            )
-        } else {
-            viewModel = .init(
-                title: "",
-                description: "",
-                dateText: Date().formattedString,
-                saveButtonTitle: "Создать"
-            )
-        }
+        let viewModel = DetailsViewModel(
+            title: item?.todo ?? "",
+            description: item?.detailsText ?? "",
+            dateText: (item?.createdAt ?? Date()).formattedString,
+            saveButtonTitle: mode?.isEdit == true ? "Сохранить" : "Создать"
+        )
+        
         view?.setupInitialState(with: viewModel)
         let hasTitle = !viewModel.title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
         view?.updateSaveButton(isEnabled: hasTitle)
@@ -84,5 +66,25 @@ extension DetailsPresenter: DetailsInteractorOutput {
         }
         
         router?.close()
+    }
+}
+
+fileprivate extension DetailsPresenter.Mode {
+    var taskId: String? {
+        switch self {
+        case .edit(let taskId):
+            return taskId
+        case .create:
+            return nil
+        }
+    }
+    
+    var isEdit: Bool {
+        switch self {
+        case .edit:
+            return true
+        case .create:
+            return false
+        }
     }
 }

@@ -12,7 +12,7 @@ extension UICollectionViewLayout {
         var config = UICollectionLayoutListConfiguration(appearance: .plain)
         config.backgroundColor = .clear
         config.showsSeparators = true
-        config.separatorConfiguration.color = ToDoListAsset.Assets.separator.color
+        config.separatorConfiguration.color = .appSeparator
         return UICollectionViewCompositionalLayout.list(using: config)
     }
 }
