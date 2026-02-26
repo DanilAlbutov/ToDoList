@@ -38,11 +38,11 @@ final class CoreDataStack {
 
         let entity = NSEntityDescription()
         entity.name = CoreDataTaskItemsStorage.Entity.name
-        entity.managedObjectClassName = NSStringFromClass(NSManagedObject.self)
+        entity.managedObjectClassName = NSStringFromClass(TaskItemManagedObject.self)
 
         let idAttribute = NSAttributeDescription()
         idAttribute.name = CoreDataTaskItemsStorage.Attribute.id
-        idAttribute.attributeType = .integer64AttributeType
+        idAttribute.attributeType = .stringAttributeType
         idAttribute.isOptional = false
 
         let todoAttribute = NSAttributeDescription()
@@ -54,6 +54,11 @@ final class CoreDataStack {
         detailsTextAttribute.name = CoreDataTaskItemsStorage.Attribute.detailsText
         detailsTextAttribute.attributeType = .stringAttributeType
         detailsTextAttribute.isOptional = true
+        
+        let createdAtAttribute = NSAttributeDescription()
+        createdAtAttribute.name = CoreDataTaskItemsStorage.Attribute.createdAt
+        createdAtAttribute.attributeType = .dateAttributeType
+        createdAtAttribute.isOptional = true
 
         let completedAttribute = NSAttributeDescription()
         completedAttribute.name = CoreDataTaskItemsStorage.Attribute.completed
@@ -69,6 +74,7 @@ final class CoreDataStack {
             idAttribute,
             todoAttribute,
             detailsTextAttribute,
+            createdAtAttribute,
             completedAttribute,
             userIDAttribute
         ]

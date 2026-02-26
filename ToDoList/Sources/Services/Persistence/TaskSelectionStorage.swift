@@ -2,10 +2,10 @@ import CoreData
 import Foundation
 
 protocol TaskItemsStorage {
-    func loadItems() -> [ToDoListResponse.Item]
-    func loadItem(with taskID: String) -> ToDoListResponse.Item?
-    func save(items: [ToDoListResponse.Item], overrideOldCompletion: Bool)
-    func upsert(item: ToDoListResponse.Item)
+    func loadItems() -> [TaskItem]
+    func loadItem(with taskID: String) -> TaskItem?
+    func save(items: [TaskItem], overrideOldCompletion: Bool)
+    func upsert(item: TaskItem)
     func updateCompletion(for taskID: String, isCompleted: Bool)
     func deleteItem(with taskID: String)
 }
@@ -19,6 +19,7 @@ final class CoreDataTaskItemsStorage: TaskItemsStorage {
         static let id = "id"
         static let todo = "todo"
         static let detailsText = "detailsText"
+        static let createdAt = "createdAt"
         static let completed = "completed"
         static let userID = "userID"
     }
@@ -29,35 +30,16 @@ final class CoreDataTaskItemsStorage: TaskItemsStorage {
         self.coreDataStack = coreDataStack
     }
 
-    func loadItems() -> [ToDoListResponse.Item] {
+    func loadItems() -> [TaskItem] {
         let context = coreDataStack.viewContext
-        let request = NSFetchRequest<NSManagedObject>(entityName: Entity.name)
+        let request = TaskItemManagedObject.fetchRequest()
         request.sortDescriptors = [NSSortDescriptor(key: Attribute.id, ascending: true)]
 
-        var items: [ToDoListResponse.Item] = []
+        var items: [TaskItem] = []
         context.performAndWait {
             do {
                 let objects = try context.fetch(request)
-                for object in objects {
-                    guard
-                        let id = object.value(forKey: Attribute.id) as? Int64,
-                        let todo = object.value(forKey: Attribute.todo) as? String,
-                        let completed = object.value(forKey: Attribute.completed) as? Bool,
-                        let userID = object.value(forKey: Attribute.userID) as? Int64
-                    else {
-                        continue
-                    }
-                    let detailsText = object.value(forKey: Attribute.detailsText) as? String
-                    items.append(
-                        .init(
-                            id: Int(id),
-                            todo: todo,
-                            completed: completed,
-                            userID: Int(userID),
-                            detailsText: detailsText
-                        )
-                    )
-                }
+                items = objects.map(\.domainModel)
             } catch {
                 print("Failed to fetch task items: \(error)")
             }
@@ -66,32 +48,14 @@ final class CoreDataTaskItemsStorage: TaskItemsStorage {
         return items
     }
 
-    func loadItem(with taskID: String) -> ToDoListResponse.Item? {
-        guard let id = Int64(taskID) else {
-            return nil
-        }
-
+    func loadItem(with taskID: String) -> TaskItem? {
         let context = coreDataStack.viewContext
-        let request = NSFetchRequest<NSManagedObject>(entityName: Entity.name)
-        request.fetchLimit = 1
-        request.predicate = NSPredicate(format: "%K == %d", Attribute.id, id)
 
-        var item: ToDoListResponse.Item?
+        var item: TaskItem?
         context.performAndWait {
             do {
-                guard let object = try context.fetch(request).first,
-                      let todo = object.value(forKey: Attribute.todo) as? String,
-                      let completed = object.value(forKey: Attribute.completed) as? Bool,
-                      let userID = object.value(forKey: Attribute.userID) as? Int64 else {
-                    return
-                }
-                item = .init(
-                    id: Int(id),
-                    todo: todo,
-                    completed: completed,
-                    userID: Int(userID),
-                    detailsText: object.value(forKey: Attribute.detailsText) as? String
-                )
+                let request = makeFetchRequest(forID: taskID)
+                item = try context.fetch(request).first?.domainModel
             } catch {
                 print("Failed to fetch task item: \(error)")
             }
@@ -100,28 +64,20 @@ final class CoreDataTaskItemsStorage: TaskItemsStorage {
         return item
     }
 
-    func save(items: [ToDoListResponse.Item], overrideOldCompletion: Bool) {
+    func save(items: [TaskItem], overrideOldCompletion: Bool) {
         let context = coreDataStack.viewContext
 
         context.performAndWait {
             do {
                 for item in items {
-                    let request = NSFetchRequest<NSManagedObject>(entityName: Entity.name)
-                    request.fetchLimit = 1
-                    request.predicate = NSPredicate(format: "%K == %d", Attribute.id, item.id)
-
+                    let request = makeFetchRequest(forID: item.id)
                     let existingObject = try context.fetch(request).first
-                    let object = existingObject
-                        ?? NSEntityDescription.insertNewObject(forEntityName: Entity.name, into: context)
+                    let object = existingObject ?? TaskItemManagedObject(context: context)
 
                     if existingObject == nil {
-                        object.setValue(Int64(item.id), forKey: Attribute.id)
-                        object.setValue(item.todo, forKey: Attribute.todo)
-                        object.setValue(item.detailsText, forKey: Attribute.detailsText)
-                        object.setValue(item.completed, forKey: Attribute.completed)
-                        object.setValue(Int64(item.userID), forKey: Attribute.userID)
+                        object.apply(item, fallbackDate: Date())
                     } else if overrideOldCompletion {
-                        object.setValue(item.completed, forKey: Attribute.completed)
+                        object.completed = item.completed
                     }
                 }
 
@@ -135,23 +91,15 @@ final class CoreDataTaskItemsStorage: TaskItemsStorage {
         }
     }
 
-    func upsert(item: ToDoListResponse.Item) {
+    func upsert(item: TaskItem) {
         let context = coreDataStack.viewContext
 
         context.performAndWait {
             do {
-                let request = NSFetchRequest<NSManagedObject>(entityName: Entity.name)
-                request.fetchLimit = 1
-                request.predicate = NSPredicate(format: "%K == %d", Attribute.id, item.id)
-
-                let object = try context.fetch(request).first
-                    ?? NSEntityDescription.insertNewObject(forEntityName: Entity.name, into: context)
-
-                object.setValue(Int64(item.id), forKey: Attribute.id)
-                object.setValue(item.todo, forKey: Attribute.todo)
-                object.setValue(item.detailsText, forKey: Attribute.detailsText)
-                object.setValue(item.completed, forKey: Attribute.completed)
-                object.setValue(Int64(item.userID), forKey: Attribute.userID)
+                let request = makeFetchRequest(forID: item.id)
+                let existingObject = try context.fetch(request).first
+                let object = existingObject ?? TaskItemManagedObject(context: context)
+                object.apply(item, fallbackDate: existingObject?.createdAt ?? Date())
 
                 if context.hasChanges {
                     try context.save()
@@ -164,23 +112,17 @@ final class CoreDataTaskItemsStorage: TaskItemsStorage {
     }
 
     func updateCompletion(for taskID: String, isCompleted: Bool) {
-        guard let id = Int64(taskID) else {
-            return
-        }
 
         let context = coreDataStack.viewContext
 
         context.performAndWait {
             do {
-                let request = NSFetchRequest<NSManagedObject>(entityName: Entity.name)
-                request.fetchLimit = 1
-                request.predicate = NSPredicate(format: "%K == %d", Attribute.id, id)
-
+                let request = makeFetchRequest(forID: taskID)
                 guard let object = try context.fetch(request).first else {
                     return
                 }
 
-                object.setValue(isCompleted, forKey: Attribute.completed)
+                object.completed = isCompleted
 
                 if context.hasChanges {
                     try context.save()
@@ -193,18 +135,11 @@ final class CoreDataTaskItemsStorage: TaskItemsStorage {
     }
 
     func deleteItem(with taskID: String) {
-        guard let id = Int64(taskID) else {
-            return
-        }
-
         let context = coreDataStack.viewContext
 
         context.performAndWait {
             do {
-                let request = NSFetchRequest<NSManagedObject>(entityName: Entity.name)
-                request.fetchLimit = 1
-                request.predicate = NSPredicate(format: "%K == %d", Attribute.id, id)
-
+                let request = makeFetchRequest(forID: taskID)
                 guard let object = try context.fetch(request).first else {
                     return
                 }
@@ -219,5 +154,12 @@ final class CoreDataTaskItemsStorage: TaskItemsStorage {
                 print("Failed to delete task item: \(error)")
             }
         }
+    }
+
+    private func makeFetchRequest(forID id: String) -> NSFetchRequest<TaskItemManagedObject> {
+        let request = TaskItemManagedObject.fetchRequest()
+        request.fetchLimit = 1
+        request.predicate = NSPredicate(format: "%K == %@", Attribute.id, id)
+        return request
     }
 }

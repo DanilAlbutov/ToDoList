@@ -21,7 +21,7 @@ final class DetailsPresenter {
     
     
     var mode: Mode?
-    private var currentTask: ToDoListResponse.Item?
+    private var currentTask: TaskItem?
 }
 
 extension DetailsPresenter: DetailsViewOutput {
@@ -53,14 +53,14 @@ extension DetailsPresenter: DetailsViewOutput {
 }
 
 extension DetailsPresenter: DetailsInteractorOutput {
-    func didLoadTask(item: ToDoListResponse.Item?) {
+    func didLoadTask(item: TaskItem?) {
         currentTask = item
         let viewModel: DetailsViewModel
         if case .edit = mode {
             viewModel = .init(
                 title: item?.todo ?? "",
                 description: item?.detailsText ?? "",
-                dateText: Date().formattedString,
+                dateText: (item?.createdAt ?? Date()).formattedString,
                 saveButtonTitle: "Сохранить"
             )
         } else {

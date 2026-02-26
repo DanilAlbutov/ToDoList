@@ -23,12 +23,13 @@ final class DetailsInteractor: DetailsInteractorInput {
 
         if let taskID,
            let existing = taskItemsStorage?.loadItem(with: taskID) {
-            let updated = ToDoListResponse.Item(
+            let updated = TaskItem(
                 id: existing.id,
                 todo: trimmedTitle,
                 completed: existing.completed,
                 userID: existing.userID,
-                detailsText: detailsText
+                detailsText: detailsText,
+                createdAt: existing.createdAt
             )
             taskItemsStorage?.upsert(item: updated)
             output?.didSaveTask()
@@ -36,13 +37,14 @@ final class DetailsInteractor: DetailsInteractorInput {
         }
         
         let existingItems = taskItemsStorage?.loadItems() ?? []
-        let nextID = (existingItems.map(\.id).max() ?? .zero) + 1
-        let newItem = ToDoListResponse.Item(
-            id: nextID,
+        let nextID = (existingItems.compactMap({ Int($0.id) }).max() ?? .zero) + 1
+        let newItem = TaskItem(
+            id: "\(nextID)",
             todo: trimmedTitle,
             completed: false,
             userID: .zero,
-            detailsText: detailsText
+            detailsText: detailsText,
+            createdAt: Date()
         )
         taskItemsStorage?.upsert(item: newItem)
         output?.didSaveTask()

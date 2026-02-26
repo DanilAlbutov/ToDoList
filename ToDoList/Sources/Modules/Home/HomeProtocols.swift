@@ -2,12 +2,13 @@ import UIKit
 
 protocol HomeViewInput: AnyObject {
     func setupInitialState()
+    func showLoading()
+    func hideLoading()
     func displayList(items: [TaskCollectionViewCellConfiguration])
     func updateItem(
         with id: String,
         for items: [TaskCollectionViewCellConfiguration]?
     )
-    func presentShareSheet(text: String)
 }
 
 protocol HomeViewOutput: AnyObject {
@@ -30,10 +31,13 @@ protocol HomeInteractorInput: AnyObject {
 }
 
 protocol HomeInteractorOutput: AnyObject {
-    func listLoaded(model: ToDoListResponse)
+    func listLoaded(items: [TaskItem])
+    func listLoadingFailed(message: String)
 }
 
 protocol HomeRouterInput: AnyObject {
     func openCreateTask(moduleOutput: DetailsModuleOutput?)
     func openEditTask(taskID: String, moduleOutput: DetailsModuleOutput?)
+    func openErrorAlert(message: String)
+    func openShareSheet(with text: String)
 }

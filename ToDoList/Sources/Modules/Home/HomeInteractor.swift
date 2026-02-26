@@ -12,27 +12,16 @@ final class HomeInteractor: HomeInteractorInput {
             switch result {
             case .success(let list):
                 let needOverride = self?.taskItemsStorage?.loadItems().isEmpty == true
-                self?.taskItemsStorage?.save(items: list.todos, overrideOldCompletion: needOverride)
-                let storedItems = self?.taskItemsStorage?.loadItems() ?? list.todos
-                let response = ToDoListResponse(
-                    todos: storedItems,
-                    total: list.total,
-                    skip: list.skip,
-                    limit: list.limit
-                )
-                self?.output?.listLoaded(model: response)
+                let networkItems = list.todos.map(TaskItem.init(responseItem:))
+                self?.taskItemsStorage?.save(items: networkItems, overrideOldCompletion: needOverride)
+                let storedItems = self?.taskItemsStorage?.loadItems() ?? networkItems
+                self?.output?.listLoaded(items: storedItems)
             case .failure(let error):
                 let storedItems = self?.taskItemsStorage?.loadItems() ?? []
                 if !storedItems.isEmpty {
-                    let response = ToDoListResponse(
-                        todos: storedItems,
-                        total: storedItems.count,
-                        skip: .zero,
-                        limit: storedItems.count
-                    )
-                    self?.output?.listLoaded(model: response)
+                    self?.output?.listLoaded(items: storedItems)
                 } else {
-                    // TODO: - present error
+                    self?.output?.listLoadingFailed(message: error.localizedDescription)
                 }
             }
         }
@@ -40,13 +29,7 @@ final class HomeInteractor: HomeInteractorInput {
     
     func loadStoredTasks() {
         let storedItems = taskItemsStorage?.loadItems() ?? []
-        let response = ToDoListResponse(
-            todos: storedItems,
-            total: storedItems.count,
-            skip: .zero,
-            limit: storedItems.count
-        )
-        output?.listLoaded(model: response)
+        output?.listLoaded(items: storedItems)
     }
 
     func saveTaskSelection(taskID: String, isSelected: Bool) {

@@ -29,7 +29,7 @@ protocol DetailsInteractorInput: AnyObject {
 }
 
 protocol DetailsInteractorOutput: AnyObject {
-    func didLoadTask(item: ToDoListResponse.Item?)
+    func didLoadTask(item: TaskItem?)
     func didSaveTask()
 }
 

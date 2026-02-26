@@ -9,7 +9,7 @@ final class HomePresenter {
         makeVisibleItems()
     }
 
-    private var allItems: [TaskCollectionViewCellConfiguration] = []  
+    private var allItems: [TaskItem] = []
     
     private var currentSearchText: String = ""
     
@@ -21,20 +21,23 @@ final class HomePresenter {
         let trimmedText = currentSearchText.trimmingCharacters(in: .whitespacesAndNewlines)
 
         guard !trimmedText.isEmpty else {
-            return allItems
+            return allItems.map(\.cellConfiguration)
         }
 
         let normalizedQuery = trimmedText.lowercased()
-        return allItems.filter {
-            $0.title.lowercased().contains(normalizedQuery)
-            || $0.description.lowercased().contains(normalizedQuery)
-        }
+        return allItems
+            .filter {
+                $0.todo.lowercased().contains(normalizedQuery)
+                || ($0.detailsText?.lowercased().contains(normalizedQuery) ?? false)
+            }
+            .map(\.cellConfiguration)
     }
 }
 
 extension HomePresenter: HomeViewOutput {
     func viewDidLoad() {
         view?.setupInitialState()
+        view?.showLoading()
         interactor?.onLoad()
     }
     
@@ -52,15 +55,7 @@ extension HomePresenter: HomeViewOutput {
 
         guard let index = itemIndex(with: taskID) else { return }
 
-        allItems[index].isCompleted = isSelected
-        let oldVisibleIDs = visibleItems.map(\.id)
-        let newVisibleIDs = visibleItems.map(\.id)
-
-        guard newVisibleIDs == oldVisibleIDs else {
-            view?.displayList(items: visibleItems)
-            return
-        }
-
+        allItems[index] = allItems[index].updated(completed: isSelected)
         guard visibleItems.contains(where: { $0.id == taskID }) else {
             return
         }
@@ -69,7 +64,7 @@ extension HomePresenter: HomeViewOutput {
 
     func checkButtonTapped(taskID: String) {
         guard let index = itemIndex(with: taskID) else { return }
-        let isSelected = !allItems[index].isCompleted
+        let isSelected = !allItems[index].completed
         taskSelectionDidChange(taskID: taskID, isSelected: isSelected)
     }
     
@@ -86,8 +81,8 @@ extension HomePresenter: HomeViewOutput {
             return
         }
 
-        let text = "\(item.title)\n\n\(item.description)"
-        view?.presentShareSheet(text: text)
+        let text = "\(item.todo)\n\n\(item.detailsText ?? "")"
+        router?.openShareSheet(with: text)
     }
 
     func didTapDelete(taskID: String) {
@@ -100,9 +95,15 @@ extension HomePresenter: HomeViewOutput {
 }
 
 extension HomePresenter: HomeInteractorOutput { 
-    func listLoaded(model: ToDoListResponse) {
-        allItems = model.cellConfigurations
+    func listLoaded(items: [TaskItem]) {
+        allItems = items
+        view?.hideLoading()
         view?.displayList(items: visibleItems)
+    }
+
+    func listLoadingFailed(message: String) {
+        view?.hideLoading()
+        router?.openErrorAlert(message: message)
     }
 }
 
@@ -117,16 +118,27 @@ extension HomePresenter: DetailsModuleOutput {
     }
 }
 
-fileprivate extension ToDoListResponse {
-    var cellConfigurations: [TaskCollectionViewCellConfiguration] {
-        todos.map {
-            .init(
-                id: "\($0.id)",
-                title: $0.todo,
-                description: $0.detailsText ?? "User: \($0.userID)",
-                date: Date().formattedString,
-                isCompleted: $0.completed
+private extension TaskItem {
+    func updated(completed: Bool) -> TaskItem {
+        .init(
+            id: id,
+            todo: todo,
+            completed: completed,
+            userID: userID,
+            detailsText: detailsText,
+            createdAt: createdAt
+        )
+    }
+    
+    var cellConfiguration: TaskCollectionViewCellConfiguration {
+        .init(
+            id: id,
+            infoConfig: .init(
+                title: todo,
+                description: detailsText ?? "User id: \(userID), task id: \(id)",
+                date: (createdAt ?? Date()).formattedString,
+                isCompleted: completed
             )
-        }
+        )
     }
 }
