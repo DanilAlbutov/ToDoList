@@ -18,8 +18,6 @@ final class TaskCollectionViewCell: UICollectionViewListCell {
     
     typealias Configuration = TaskCollectionViewCellConfiguration
     
-    private var configuration: Configuration?
-    
     // MARK: - UI
     
     private let checkButton = CheckMarkButton(type: .custom)
@@ -44,8 +42,7 @@ final class TaskCollectionViewCell: UICollectionViewListCell {
     // MARK: - Configuration
     
     func configure(with model: Configuration) {
-        configuration = model
-        updateCompletedState(model.infoConfig)
+        applyState(model.infoConfig)
     }
     
     // MARK: - Setup
@@ -77,8 +74,7 @@ final class TaskCollectionViewCell: UICollectionViewListCell {
         }
     }
     
-    private func updateCompletedState(_ config: TaskInfoView.Configuration) {
-        guard let configuration else { return }
+    private func applyState(_ config: TaskInfoView.Configuration) {
         checkButton.setCompleted(config.isCompleted)
         taskInfoView.configure(with: config)
     }

@@ -34,7 +34,7 @@ final class DetailsInteractor: DetailsInteractorInput {
                         detailsText: detailsText,
                         createdAt: existing.createdAt
                     )
-                    self.taskItemsStorage?.upsert(item: updated) { [weak self] in
+                    self.taskItemsStorage?.insert(item: updated) { [weak self] in
                         self?.output?.didSaveTask()
                     }
                     return
@@ -56,18 +56,17 @@ final class DetailsInteractor: DetailsInteractorInput {
 
 private extension DetailsInteractor {
     func createTask(title: String, detailsText: String?) {
-        taskItemsStorage?.loadItems { [weak self] existingItems in
+        taskItemsStorage?.loadItems { [weak self] _ in
             guard let self else { return }
-            let nextID = (existingItems.compactMap({ Int($0.id) }).max() ?? .zero) + 1
             let newItem = TaskItem(
-                id: "\(nextID)",
+                id: UUID().uuidString,
                 todo: title,
                 completed: false,
                 userID: .zero,
                 detailsText: detailsText,
                 createdAt: Date()
             )
-            self.taskItemsStorage?.upsert(item: newItem) { [weak self] in
+            self.taskItemsStorage?.insert(item: newItem) { [weak self] in
                 self?.output?.didSaveTask()
             }
         }

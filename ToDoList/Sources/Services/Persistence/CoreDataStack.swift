@@ -42,51 +42,30 @@ final class CoreDataStack {
 
     static func makeModel() -> NSManagedObjectModel {
         let model = NSManagedObjectModel()
+        
+        let attributesInfo: [(CoreDataTaskItemsStorage.Attribute, NSAttributeType, Bool)] = [
+            (.id, .stringAttributeType, false),
+            (.todo, .stringAttributeType, false),
+            (.detailsText, .stringAttributeType, true),
+            (.createdAt, .dateAttributeType, true),
+            (.completed, .booleanAttributeType, false),
+            (.userID, .integer64AttributeType, false)
+        ]
+            
 
         let entity = NSEntityDescription()
         entity.name = CoreDataTaskItemsStorage.Entity.name
         entity.managedObjectClassName = NSStringFromClass(TaskItemManagedObject.self)
 
-        let idAttribute = NSAttributeDescription()
-        idAttribute.name = CoreDataTaskItemsStorage.Attribute.id
-        idAttribute.attributeType = .stringAttributeType
-        idAttribute.isOptional = false
+        entity.properties = attributesInfo.map({
+            let attribute = NSAttributeDescription()
+            attribute.name = $0.0.rawValue
+            attribute.attributeType = $0.1
+            attribute.isOptional = $0.2
+            return attribute
+        })
 
-        let todoAttribute = NSAttributeDescription()
-        todoAttribute.name = CoreDataTaskItemsStorage.Attribute.todo
-        todoAttribute.attributeType = .stringAttributeType
-        todoAttribute.isOptional = false
-        
-        let detailsTextAttribute = NSAttributeDescription()
-        detailsTextAttribute.name = CoreDataTaskItemsStorage.Attribute.detailsText
-        detailsTextAttribute.attributeType = .stringAttributeType
-        detailsTextAttribute.isOptional = true
-        
-        let createdAtAttribute = NSAttributeDescription()
-        createdAtAttribute.name = CoreDataTaskItemsStorage.Attribute.createdAt
-        createdAtAttribute.attributeType = .dateAttributeType
-        createdAtAttribute.isOptional = true
-
-        let completedAttribute = NSAttributeDescription()
-        completedAttribute.name = CoreDataTaskItemsStorage.Attribute.completed
-        completedAttribute.attributeType = .booleanAttributeType
-        completedAttribute.isOptional = false
-
-        let userIDAttribute = NSAttributeDescription()
-        userIDAttribute.name = CoreDataTaskItemsStorage.Attribute.userID
-        userIDAttribute.attributeType = .integer64AttributeType
-        userIDAttribute.isOptional = false
-
-        entity.properties = [
-            idAttribute,
-            todoAttribute,
-            detailsTextAttribute,
-            createdAtAttribute,
-            completedAttribute,
-            userIDAttribute
-        ]
-
-        let uniqueConstraint = [CoreDataTaskItemsStorage.Attribute.id]
+        let uniqueConstraint = [CoreDataTaskItemsStorage.Attribute.id.rawValue]
         entity.uniquenessConstraints = [uniqueConstraint]
 
         model.entities = [entity]

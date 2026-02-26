@@ -26,10 +26,12 @@ final class HomeRouter: HomeRouterInput {
     func openErrorAlert(message: String) {
         let title = "Ошибка загрузки"
         let fallbackMessage = "Не удалось загрузить список задач."
+        let errorMessage = message.trimmingCharacters(in: .whitespacesAndNewlines)
+        let body = errorMessage.isEmpty ? fallbackMessage : "\(fallbackMessage)\n\(errorMessage)"
 
         let alertController = UIAlertController(
             title: title,
-            message: fallbackMessage,
+            message: body,
             preferredStyle: .alert
         )
         alertController.addAction(UIAlertAction(title: "ОК", style: .default))

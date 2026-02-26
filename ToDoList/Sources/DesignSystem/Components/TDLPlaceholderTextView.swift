@@ -81,6 +81,7 @@ final class TDLPlaceholderTextView: UITextView {
     }
 
     private func updatePlaceholderVisibility() {
-        placeholderLabel.isHidden = !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        let value = text ?? ""
+        placeholderLabel.isHidden = !value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 }
