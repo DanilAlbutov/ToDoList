@@ -8,6 +8,13 @@ final class CoreDataStack {
         persistentContainer.viewContext
     }
 
+    func makeBackgroundContext() -> NSManagedObjectContext {
+        let context = persistentContainer.newBackgroundContext()
+        context.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
+        context.automaticallyMergesChangesFromParent = true
+        return context
+    }
+
     init(containerName: String = "ToDoListModel", inMemory: Bool = false) {
         let model = Self.makeModel()
         persistentContainer = NSPersistentContainer(name: containerName, managedObjectModel: model)

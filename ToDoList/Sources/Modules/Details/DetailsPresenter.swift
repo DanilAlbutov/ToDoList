@@ -1,6 +1,6 @@
 import Foundation
 
-final class DetailsPresenter {
+final class DetailsPresenter: DetailsViewOutput, DetailsInteractorOutput {
     
     enum Mode {
         case edit(taskId: String), create
@@ -13,9 +13,9 @@ final class DetailsPresenter {
     
     var mode: Mode?
     private var currentTask: TaskItem?
-}
-
-extension DetailsPresenter: DetailsViewOutput {
+    
+    //    MARK: - DetailsViewOutput 
+    
     func viewDidLoad() {
         switch mode {
         case .create:
@@ -25,8 +25,7 @@ extension DetailsPresenter: DetailsViewOutput {
         case .none:
             assertionFailure("mode property is required")
             break
-        }
-        
+        }        
     }
     
     func titleDidChange(_ text: String) {
@@ -41,9 +40,9 @@ extension DetailsPresenter: DetailsViewOutput {
             description: description
         )        
     }
-}
-
-extension DetailsPresenter: DetailsInteractorOutput {
+    
+    //    MARK: - DetailsInteractorOutput
+    
     func didLoadTask(item: TaskItem?) {
         currentTask = item
         let viewModel = DetailsViewModel(

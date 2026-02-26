@@ -1,6 +1,6 @@
 import Foundation
 
-final class HomePresenter {
+final class HomePresenter: HomeViewOutput, HomeInteractorOutput, DetailsModuleOutput {
     weak var view: HomeViewInput?
     var interactor: HomeInteractorInput?
     var router: HomeRouterInput?
@@ -17,6 +17,8 @@ final class HomePresenter {
         allItems.firstIndex(where: { $0.id == id })
     }
     
+    // MARK: - Private methods
+    
     private func makeVisibleItems() -> [TaskCollectionViewCellConfiguration] {
         let trimmedText = currentSearchText.trimmingCharacters(in: .whitespacesAndNewlines)
 
@@ -32,9 +34,9 @@ final class HomePresenter {
             }
             .map(\.cellConfiguration)
     }
-}
 
-extension HomePresenter: HomeViewOutput {
+    // MARK: - HomeViewOutput
+
     func viewDidLoad() {
         view?.setupInitialState()
         view?.showLoading()
@@ -92,9 +94,9 @@ extension HomePresenter: HomeViewOutput {
         interactor?.deleteTask(taskID: taskID)
         view?.displayList(items: visibleItems)
     }
-}
-
-extension HomePresenter: HomeInteractorOutput { 
+    
+    // MARK: - HomeInteractorOutput
+    
     func listLoaded(items: [TaskItem]) {
         allItems = items
         view?.hideLoading()
@@ -105,9 +107,9 @@ extension HomePresenter: HomeInteractorOutput {
         view?.hideLoading()
         router?.openErrorAlert(message: message)
     }
-}
-
-extension HomePresenter: DetailsModuleOutput {
+    
+    // MARK: - DetailsModuleOutput
+    
     func detailsModuleDidFinishCreatingTask() {
         interactor?.loadStoredTasks()
     }
@@ -118,7 +120,7 @@ extension HomePresenter: DetailsModuleOutput {
     }
 }
 
-private extension TaskItem {
+fileprivate extension TaskItem {
     func updated(completed: Bool) -> TaskItem {
         .init(
             id: id,

@@ -9,8 +9,9 @@ final class DetailsInteractor: DetailsInteractorInput {
             output?.didLoadTask(item: nil)
             return
         }
-        let item = taskItemsStorage?.loadItem(with: taskID)
-        output?.didLoadTask(item: item)
+        taskItemsStorage?.loadItem(with: taskID) { [weak self] item in
+            self?.output?.didLoadTask(item: item)
+        }
     }
     
     func saveTask(taskID: String?, title: String, description: String) {
@@ -21,32 +22,54 @@ final class DetailsInteractor: DetailsInteractorInput {
         let trimmedDetailsText = description.trimmingCharacters(in: .whitespacesAndNewlines)
         let detailsText = trimmedDetailsText.isEmpty ? nil : trimmedDetailsText
 
-        if let taskID,
-           let existing = taskItemsStorage?.loadItem(with: taskID) {
-            let updated = TaskItem(
-                id: existing.id,
-                todo: trimmedTitle,
-                completed: existing.completed,
-                userID: existing.userID,
-                detailsText: detailsText,
-                createdAt: existing.createdAt
-            )
-            taskItemsStorage?.upsert(item: updated)
-            output?.didSaveTask()
+        if let taskID {
+            taskItemsStorage?.loadItem(with: taskID) { [weak self] existing in
+                guard let self else { return }
+                if let existing {
+                    let updated = TaskItem(
+                        id: existing.id,
+                        todo: trimmedTitle,
+                        completed: existing.completed,
+                        userID: existing.userID,
+                        detailsText: detailsText,
+                        createdAt: existing.createdAt
+                    )
+                    self.taskItemsStorage?.upsert(item: updated) { [weak self] in
+                        self?.output?.didSaveTask()
+                    }
+                    return
+                }
+                self.createTask(
+                    title: trimmedTitle,
+                    detailsText: detailsText
+                )
+            }
             return
         }
-        
-        let existingItems = taskItemsStorage?.loadItems() ?? []
-        let nextID = (existingItems.compactMap({ Int($0.id) }).max() ?? .zero) + 1
-        let newItem = TaskItem(
-            id: "\(nextID)",
-            todo: trimmedTitle,
-            completed: false,
-            userID: .zero,
-            detailsText: detailsText,
-            createdAt: Date()
+
+        createTask(
+            title: trimmedTitle,
+            detailsText: detailsText
         )
-        taskItemsStorage?.upsert(item: newItem)
-        output?.didSaveTask()
+    }
+}
+
+private extension DetailsInteractor {
+    func createTask(title: String, detailsText: String?) {
+        taskItemsStorage?.loadItems { [weak self] existingItems in
+            guard let self else { return }
+            let nextID = (existingItems.compactMap({ Int($0.id) }).max() ?? .zero) + 1
+            let newItem = TaskItem(
+                id: "\(nextID)",
+                todo: title,
+                completed: false,
+                userID: .zero,
+                detailsText: detailsText,
+                createdAt: Date()
+            )
+            self.taskItemsStorage?.upsert(item: newItem) { [weak self] in
+                self?.output?.didSaveTask()
+            }
+        }
     }
 }

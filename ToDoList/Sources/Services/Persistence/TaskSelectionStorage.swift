@@ -2,12 +2,12 @@ import CoreData
 import Foundation
 
 protocol TaskItemsStorage {
-    func loadItems() -> [TaskItem]
-    func loadItem(with taskID: String) -> TaskItem?
-    func save(items: [TaskItem], overrideOldCompletion: Bool)
-    func upsert(item: TaskItem)
-    func updateCompletion(for taskID: String, isCompleted: Bool)
-    func deleteItem(with taskID: String)
+    func loadItems(completion: @escaping ([TaskItem]) -> Void)
+    func loadItem(with taskID: String, completion: @escaping (TaskItem?) -> Void)
+    func save(items: [TaskItem], overrideOldCompletion: Bool, completion: (() -> Void)?)
+    func upsert(item: TaskItem, completion: (() -> Void)?)
+    func updateCompletion(for taskID: String, isCompleted: Bool, completion: (() -> Void)?)
+    func deleteItem(with taskID: String, completion: (() -> Void)?)
 }
 
 final class CoreDataTaskItemsStorage: TaskItemsStorage {
@@ -30,47 +30,48 @@ final class CoreDataTaskItemsStorage: TaskItemsStorage {
         self.coreDataStack = coreDataStack
     }
 
-    func loadItems() -> [TaskItem] {
-        let context = coreDataStack.viewContext
+    func loadItems(completion: @escaping ([TaskItem]) -> Void) {
+        let context = coreDataStack.makeBackgroundContext()
         let request = TaskItemManagedObject.fetchRequest()
         request.sortDescriptors = [NSSortDescriptor(key: Attribute.id, ascending: true)]
 
-        var items: [TaskItem] = []
-        context.performAndWait {
+        context.perform {
+            var items: [TaskItem] = []
             do {
                 let objects = try context.fetch(request)
                 items = objects.map(\.domainModel)
             } catch {
                 print("Failed to fetch task items: \(error)")
             }
+            DispatchQueue.main.async {
+                completion(items)
+            }
         }
-
-        return items
     }
 
-    func loadItem(with taskID: String) -> TaskItem? {
-        let context = coreDataStack.viewContext
-
-        var item: TaskItem?
-        context.performAndWait {
+    func loadItem(with taskID: String, completion: @escaping (TaskItem?) -> Void) {
+        let context = coreDataStack.makeBackgroundContext()
+        context.perform {
+            print("-- thresd is main \(Thread.current.isMainThread)")
+            var item: TaskItem?
             do {
-                let request = makeFetchRequest(forID: taskID)
+                let request = self.makeFetchRequest(forID: taskID)
                 item = try context.fetch(request).first?.domainModel
             } catch {
                 print("Failed to fetch task item: \(error)")
             }
+            DispatchQueue.main.async {
+                completion(item)
+            }
         }
-
-        return item
     }
 
-    func save(items: [TaskItem], overrideOldCompletion: Bool) {
-        let context = coreDataStack.viewContext
-
-        context.performAndWait {
+    func save(items: [TaskItem], overrideOldCompletion: Bool, completion: (() -> Void)? = nil) {
+        let context = coreDataStack.makeBackgroundContext()
+        context.perform {
             do {
                 for item in items {
-                    let request = makeFetchRequest(forID: item.id)
+                    let request = self.makeFetchRequest(forID: item.id)
                     let existingObject = try context.fetch(request).first
                     let object = existingObject ?? TaskItemManagedObject(context: context)
 
@@ -88,15 +89,17 @@ final class CoreDataTaskItemsStorage: TaskItemsStorage {
                 context.rollback()
                 print("Failed to save task items: \(error)")
             }
+            DispatchQueue.main.async {
+                completion?()
+            }
         }
     }
 
-    func upsert(item: TaskItem) {
-        let context = coreDataStack.viewContext
-
-        context.performAndWait {
+    func upsert(item: TaskItem, completion: (() -> Void)? = nil) {
+        let context = coreDataStack.makeBackgroundContext()
+        context.perform {
             do {
-                let request = makeFetchRequest(forID: item.id)
+                let request = self.makeFetchRequest(forID: item.id)
                 let existingObject = try context.fetch(request).first
                 let object = existingObject ?? TaskItemManagedObject(context: context)
                 object.apply(item, fallbackDate: existingObject?.createdAt ?? Date())
@@ -108,17 +111,21 @@ final class CoreDataTaskItemsStorage: TaskItemsStorage {
                 context.rollback()
                 print("Failed to upsert task item: \(error)")
             }
+            DispatchQueue.main.async {
+                completion?()
+            }
         }
     }
 
-    func updateCompletion(for taskID: String, isCompleted: Bool) {
-
-        let context = coreDataStack.viewContext
-
-        context.performAndWait {
+    func updateCompletion(for taskID: String, isCompleted: Bool, completion: (() -> Void)? = nil) {
+        let context = coreDataStack.makeBackgroundContext()
+        context.perform {
             do {
-                let request = makeFetchRequest(forID: taskID)
+                let request = self.makeFetchRequest(forID: taskID)
                 guard let object = try context.fetch(request).first else {
+                    DispatchQueue.main.async {
+                        completion?()
+                    }
                     return
                 }
 
@@ -131,16 +138,21 @@ final class CoreDataTaskItemsStorage: TaskItemsStorage {
                 context.rollback()
                 print("Failed to update task completion: \(error)")
             }
+            DispatchQueue.main.async {
+                completion?()
+            }
         }
     }
 
-    func deleteItem(with taskID: String) {
-        let context = coreDataStack.viewContext
-
-        context.performAndWait {
+    func deleteItem(with taskID: String, completion: (() -> Void)? = nil) {
+        let context = coreDataStack.makeBackgroundContext()
+        context.perform {
             do {
-                let request = makeFetchRequest(forID: taskID)
+                let request = self.makeFetchRequest(forID: taskID)
                 guard let object = try context.fetch(request).first else {
+                    DispatchQueue.main.async {
+                        completion?()
+                    }
                     return
                 }
 
@@ -152,6 +164,9 @@ final class CoreDataTaskItemsStorage: TaskItemsStorage {
             } catch {
                 context.rollback()
                 print("Failed to delete task item: \(error)")
+            }
+            DispatchQueue.main.async {
+                completion?()
             }
         }
     }

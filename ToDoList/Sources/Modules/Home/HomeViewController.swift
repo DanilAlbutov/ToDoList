@@ -2,7 +2,7 @@ import Foundation
 import UIKit
 import SnapKit
 
-final class HomeViewController: UIViewController, UICollectionViewDelegate {
+final class HomeViewController: UIViewController, UICollectionViewDelegate, UISearchBarDelegate, UISearchResultsUpdating, HomeViewInput {
     var output: HomeViewOutput?
     
     typealias ItemIdentifireType = String
@@ -14,9 +14,7 @@ final class HomeViewController: UIViewController, UICollectionViewDelegate {
         $0.searchBar.placeholder = "Search"
         $0.searchBar.searchBarStyle = .minimal
         $0.searchResultsUpdater = self
-        $0.searchBar.delegate = self
-        $0.searchBar.tintColor = .primaryText
-        $0.searchBar.searchTextField.textColor = .primaryText
+        $0.searchBar.delegate = self        
         return $0
     }(UISearchController(searchResultsController: nil))
     
@@ -42,6 +40,8 @@ final class HomeViewController: UIViewController, UICollectionViewDelegate {
         super.viewWillAppear(animated)
         output?.viewWillAppear()
     }
+    
+    // MARK: - Private methods
     
     private func cell(forItemAt indexPath: IndexPath) -> UICollectionViewCell {
         guard let cell = collectionView.dequeueReusableCell(
@@ -98,12 +98,16 @@ final class HomeViewController: UIViewController, UICollectionViewDelegate {
         bottomBarView.updateTasksCount(count)
     }
     
-}
-
-extension HomeViewController: HomeViewInput {
+    // MARK: -  HomeViewInput
     func setupInitialState() {       
         title = "Задачи"        
         navigationItem.searchController = searchController
+        searchController.searchBar.tintColor = .primaryText
+        searchController.searchBar.searchTextField.textColor = .primaryText
+        searchController.searchBar.searchTextField.attributedPlaceholder = NSAttributedString(
+                string: "Search",
+                attributes: [.foregroundColor: UIColor.secondaryText]
+            )
         navigationItem.hidesSearchBarWhenScrolling = true        
         setupLargeTitle()       
     }
@@ -140,21 +144,22 @@ extension HomeViewController: HomeViewInput {
         snapshot.reconfigureItems([id])
         dataSource.apply(snapshot, animatingDifferences: true)
     }
-}
 
-extension HomeViewController: UISearchResultsUpdating {
+
+    // MARK: - UISearchResultsUpdating
+    
     func updateSearchResults(for searchController: UISearchController) {
         output?.searchTextDidChange(searchController.searchBar.text ?? "")
     }
-}
 
-extension HomeViewController: UISearchBarDelegate {
+    // MARK: - UISearchBarDelegate
+    
     func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
         output?.searchTextDidChange("")
     }
-}
-
-extension HomeViewController {
+    
+    // MARK: - UICollectionViewDelegate
+    
     func collectionView(
         _ collectionView: UICollectionView,
         contextMenuConfigurationForItemAt indexPath: IndexPath,

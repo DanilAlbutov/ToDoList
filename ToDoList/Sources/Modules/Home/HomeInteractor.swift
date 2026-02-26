@@ -9,34 +9,47 @@ final class HomeInteractor: HomeInteractorInput {
     
     func onLoad() {
         networkService?.getList { [weak self] result in
+            guard let self else { return }
             switch result {
             case .success(let list):
-                let needOverride = self?.taskItemsStorage?.loadItems().isEmpty == true
                 let networkItems = list.todos.map(TaskItem.init(responseItem:))
-                self?.taskItemsStorage?.save(items: networkItems, overrideOldCompletion: needOverride)
-                let storedItems = self?.taskItemsStorage?.loadItems() ?? networkItems
-                self?.output?.listLoaded(items: storedItems)
+                self.taskItemsStorage?.loadItems { [weak self] existingItems in
+                    guard let self else { return }
+                    let needOverride = existingItems.isEmpty
+                    self.taskItemsStorage?.save(
+                        items: networkItems,
+                        overrideOldCompletion: needOverride
+                    ) { [weak self] in
+                        guard let self else { return }
+                        self.taskItemsStorage?.loadItems { [weak self] storedItems in
+                            self?.output?.listLoaded(items: storedItems.isEmpty ? networkItems : storedItems)
+                        }
+                    }
+                }
             case .failure(let error):
-                let storedItems = self?.taskItemsStorage?.loadItems() ?? []
-                if !storedItems.isEmpty {
-                    self?.output?.listLoaded(items: storedItems)
-                } else {
-                    self?.output?.listLoadingFailed(message: error.localizedDescription)
+                self.taskItemsStorage?.loadItems { [weak self] storedItems in
+                    guard let self else { return }
+                    if !storedItems.isEmpty {
+                        self.output?.listLoaded(items: storedItems)
+                    } else {
+                        self.output?.listLoadingFailed(message: error.localizedDescription)
+                    }
                 }
             }
         }
     }
     
     func loadStoredTasks() {
-        let storedItems = taskItemsStorage?.loadItems() ?? []
-        output?.listLoaded(items: storedItems)
+        taskItemsStorage?.loadItems { [weak self] storedItems in
+            self?.output?.listLoaded(items: storedItems)
+        }
     }
 
     func saveTaskSelection(taskID: String, isSelected: Bool) {
-        taskItemsStorage?.updateCompletion(for: taskID, isCompleted: isSelected)
+        taskItemsStorage?.updateCompletion(for: taskID, isCompleted: isSelected, completion: nil)
     }
 
     func deleteTask(taskID: String) {
-        taskItemsStorage?.deleteItem(with: taskID)
+        taskItemsStorage?.deleteItem(with: taskID, completion: nil)
     }
 }
