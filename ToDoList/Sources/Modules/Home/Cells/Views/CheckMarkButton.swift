@@ -14,7 +14,7 @@ final class CheckMarkButton: UIButton {
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupAppearance()
-        setupLayout()
+        setupViews()
     }
 
     required init?(coder: NSCoder) {
@@ -33,7 +33,7 @@ final class CheckMarkButton: UIButton {
         layer.borderColor = UIColor.border.cgColor
     }
 
-    private func setupLayout() {
+    private func setupViews() {
         addSubview(checkImageView)
 
         checkImageView.snp.makeConstraints {

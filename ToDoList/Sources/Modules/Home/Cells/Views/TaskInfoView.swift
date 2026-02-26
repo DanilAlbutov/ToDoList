@@ -38,7 +38,7 @@ final class TaskInfoView: UIView {
 
     override init(frame: CGRect) {
         super.init(frame: frame)
-        setupUI()
+        setupViews()
     }
 
     required init?(coder: NSCoder) {
@@ -55,7 +55,7 @@ final class TaskInfoView: UIView {
         updateColors(isCompleted: model.isCompleted)
     }
 
-    private func setupUI() {
+    private func setupViews() {
         addSubview(textStack)
         textStack.axis = .vertical
         textStack.spacing = 6

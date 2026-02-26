@@ -31,8 +31,7 @@ final class HomeViewController: UIViewController, UICollectionViewDelegate, UISe
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        setupBottomBar()
-        setupCollectionView()
+        setupViews()
         output?.viewDidLoad()
     }
     
@@ -59,7 +58,17 @@ final class HomeViewController: UIViewController, UICollectionViewDelegate, UISe
         return cell
     }
     
-    private func setupCollectionView() {
+    private func setupViews() {
+        view.addSubview(bottomBarView)
+        bottomBarView.onComposeTapped = { [weak self] in
+            self?.output?.didTapCreateTask()
+        }
+        bottomBarView.snp.makeConstraints {
+            $0.horizontalEdges.equalTo(view.safeAreaLayoutGuide.snp.horizontalEdges)
+            $0.bottom.equalTo(view.snp.bottom)
+            $0.height.equalTo(83)
+        }
+
         view.addSubview(collectionView)
         collectionView.register(
             TaskCollectionViewCell.self,
@@ -78,19 +87,6 @@ final class HomeViewController: UIViewController, UICollectionViewDelegate, UISe
         loader.color = .primaryText
         loader.snp.makeConstraints {
             $0.center.equalTo(collectionView.snp.center)
-        }
-    }
-
-    private func setupBottomBar() {
-        view.addSubview(bottomBarView)
-        bottomBarView.onComposeTapped = { [weak self] in
-            self?.output?.didTapCreateTask()
-        }
-
-        bottomBarView.snp.makeConstraints {
-            $0.horizontalEdges.equalTo(view.safeAreaLayoutGuide.snp.horizontalEdges)
-            $0.bottom.equalTo(view.snp.bottom)
-            $0.height.equalTo(83)
         }
     }
 

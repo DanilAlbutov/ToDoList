@@ -20,8 +20,7 @@ final class HomeBottomBarView: UIView {
 
     override init(frame: CGRect) {
         super.init(frame: frame)
-        setupUI()
-        setupLayout()
+        setupViews()
     }
 
     required init?(coder: NSCoder) {
@@ -32,14 +31,12 @@ final class HomeBottomBarView: UIView {
         tasksCountLabel.text = "\(count) Задач"
     }
 
-    private func setupUI() {
+    private func setupViews() {
         backgroundColor = UIColor(white: 0.14, alpha: 1)
         addSubview(tasksCountLabel)
         addSubview(editButton)
         editButton.addTarget(self, action: #selector(handleComposeTap), for: .touchUpInside)
-    }
-
-    private func setupLayout() {
+       
         tasksCountLabel.snp.makeConstraints {
             $0.centerX.equalToSuperview()
             $0.top.equalToSuperview().offset(26)

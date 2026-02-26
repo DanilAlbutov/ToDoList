@@ -35,7 +35,7 @@ final class TDLPlaceholderTextView: UITextView {
         self.font = style.font
         self.textColor = textColor
         self.placeholderColor = placeholderColor
-        setupUI()
+        setupViews()
         setupObserver()
     }
 
@@ -47,7 +47,7 @@ final class TDLPlaceholderTextView: UITextView {
         NotificationCenter.default.removeObserver(self)
     }
 
-    private func setupUI() {
+    private func setupViews() {
         backgroundColor = .clear
         isScrollEnabled = false
         textContainerInset = .zero

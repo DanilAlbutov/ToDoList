@@ -31,7 +31,7 @@ final class DetailsViewController: UIViewController, UITextViewDelegate {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        setupLayout()
+        setupViews()
         setupKeyboardHandling()
         output?.viewDidLoad()
     }
@@ -76,7 +76,7 @@ final class DetailsViewController: UIViewController, UITextViewDelegate {
         scrollView.verticalScrollIndicatorInsets.bottom = 0
     }
     
-    private func setupLayout() {
+    private func setupViews() {
         view.backgroundColor = .black
         navigationItem.title = nil
         navigationItem.largeTitleDisplayMode = .never

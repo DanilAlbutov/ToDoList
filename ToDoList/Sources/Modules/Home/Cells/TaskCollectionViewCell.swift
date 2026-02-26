@@ -27,8 +27,7 @@ final class TaskCollectionViewCell: UICollectionViewListCell {
     
     override init(frame: CGRect) {
         super.init(frame: frame)
-        setupUI()
-        setupLayout()
+        setupViews()
     }
 
     override func prepareForReuse() {
@@ -47,19 +46,12 @@ final class TaskCollectionViewCell: UICollectionViewListCell {
     
     // MARK: - Setup
     
-    private func setupUI() {
+    private func setupViews() {
         contentView.backgroundColor = .black
         contentView.addSubview(checkButton)
         checkButton.addTarget(self, action: #selector(handleCheckButtonTap), for: .touchUpInside)
         contentView.addSubview(taskInfoView)
-    }
-
-    @objc
-    private func handleCheckButtonTap() {
-        onCheckButtonTapped?()
-    }
-    
-    private func setupLayout() {        
+       
         checkButton.snp.makeConstraints {
             $0.left.equalToSuperview().offset(16)
             $0.top.equalToSuperview().offset(16)
@@ -72,6 +64,11 @@ final class TaskCollectionViewCell: UICollectionViewListCell {
             $0.right.equalToSuperview().inset(20)
             $0.bottom.equalToSuperview().inset(16)
         }
+    }
+
+    @objc
+    private func handleCheckButtonTap() {
+        onCheckButtonTapped?()
     }
     
     private func applyState(_ config: TaskInfoView.Configuration) {

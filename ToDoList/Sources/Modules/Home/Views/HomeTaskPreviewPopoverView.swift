@@ -26,9 +26,9 @@ final class HomeTaskPreviewPopoverView: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        setupUI()
+        setupViews()
         applyConfiguration()
-        setupLayout()
+        updatePreferredContentSize()
     }
 
     override func viewDidLayoutSubviews() {
@@ -36,7 +36,7 @@ final class HomeTaskPreviewPopoverView: UIViewController {
         updatePreferredContentSize()
     }
 
-    private func setupUI() {
+    private func setupViews() {
         view.backgroundColor = .appGray
         view.layer.cornerRadius = 12
         view.clipsToBounds = true
@@ -45,10 +45,6 @@ final class HomeTaskPreviewPopoverView: UIViewController {
         taskInfoView.snp.makeConstraints {
             $0.edges.equalToSuperview().inset(contentInsets)
         }
-    }
-
-    private func setupLayout() {
-        updatePreferredContentSize()
     }
 
     private func applyConfiguration() {
