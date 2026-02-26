@@ -4,8 +4,32 @@ final class HomePresenter {
     weak var view: HomeViewInput?
     var interactor: HomeInteractorInput?
     var router: HomeRouterInput?
+    
+    private var visibleItems: [TaskCollectionViewCellConfiguration] {
+        makeVisibleItems()
+    }
 
-    private var items: [TaskCollectionViewCellConfiguration] = []
+    private var allItems: [TaskCollectionViewCellConfiguration] = []  
+    
+    private var currentSearchText: String = ""
+    
+    private func itemIndex(with id: String) -> Int? {
+        allItems.firstIndex(where: { $0.id == id })
+    }
+    
+    private func makeVisibleItems() -> [TaskCollectionViewCellConfiguration] {
+        let trimmedText = currentSearchText.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        guard !trimmedText.isEmpty else {
+            return allItems
+        }
+
+        let normalizedQuery = trimmedText.lowercased()
+        return allItems.filter {
+            $0.title.lowercased().contains(normalizedQuery)
+            || $0.description.lowercased().contains(normalizedQuery)
+        }
+    }
 }
 
 extension HomePresenter: HomeViewOutput {
@@ -14,22 +38,34 @@ extension HomePresenter: HomeViewOutput {
         interactor?.onLoad()
     }
 
+    func searchTextDidChange(_ text: String) {
+        currentSearchText = text
+        view?.displayList(items: visibleItems)
+    }
+
     func taskSelectionDidChange(taskID: String, isSelected: Bool) {
         interactor?.saveTaskSelection(taskID: taskID, isSelected: isSelected)
 
-        guard let index = items.firstIndex(where: { $0.id == taskID }) else {
+        guard let index = itemIndex(with: taskID) else { return }
+
+        allItems[index].isCompleted = isSelected
+        let oldVisibleIDs = visibleItems.map(\.id)
+        let newVisibleIDs = visibleItems.map(\.id)
+
+        guard newVisibleIDs == oldVisibleIDs else {
+            view?.displayList(items: visibleItems)
             return
         }
 
-        items[index].isCompleted = isSelected
-        view?.updateCompletionStateForItem(with: taskID, for: items)
+        guard visibleItems.contains(where: { $0.id == taskID }) else {
+            return
+        }
+        view?.updateCompletionStateForItem(with: taskID, for: visibleItems)
     }
 
     func checkButtonTapped(taskID: String) {
-        guard let index = items.firstIndex(where: { $0.id == taskID }) else {
-            return
-        }
-        let isSelected = !items[index].isCompleted
+        guard let index = itemIndex(with: taskID) else { return }
+        let isSelected = !allItems[index].isCompleted
         taskSelectionDidChange(taskID: taskID, isSelected: isSelected)
     }
 
@@ -38,7 +74,7 @@ extension HomePresenter: HomeViewOutput {
     }
 
     func didTapShare(taskID: String) {
-        guard let item = items.first(where: { $0.id == taskID }) else {
+        guard let item = allItems.first(where: { $0.id == taskID }) else {
             return
         }
 
@@ -47,20 +83,18 @@ extension HomePresenter: HomeViewOutput {
     }
 
     func didTapDelete(taskID: String) {
-        guard let index = items.firstIndex(where: { $0.id == taskID }) else {
-            return
-        }
+        guard let index = itemIndex(with: taskID) else { return }
 
-        items.remove(at: index)
+        allItems.remove(at: index)
         interactor?.deleteTask(taskID: taskID)
-        view?.displayList(items: items)
+        view?.displayList(items: visibleItems)
     }
 }
 
 extension HomePresenter: HomeInteractorOutput { 
     func listLoaded(model: ToDoListResponse) {
-        items = model.cellConfigurations
-        view?.displayList(items: items)
+        allItems = model.cellConfigurations
+        view?.displayList(items: visibleItems)
     }
 }
 
@@ -71,7 +105,7 @@ fileprivate extension ToDoListResponse {
                 id: "\($0.id)",
                 title: $0.todo,
                 description: "User id: \($0.userID)",
-                date: Date().description,
+                date: Date().formattedString,
                 isCompleted: $0.completed
             )
         }

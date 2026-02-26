@@ -76,6 +76,8 @@ extension HomeViewController: HomeViewInput {
         searchController.obscuresBackgroundDuringPresentation = false
         searchController.searchBar.placeholder = "Search"
         searchController.searchBar.searchBarStyle = .minimal
+        searchController.searchResultsUpdater = self
+        searchController.searchBar.delegate = self
         
         title = "Задачи"
         
@@ -94,6 +96,9 @@ extension HomeViewController: HomeViewInput {
         navigationController?.navigationBar.standardAppearance = appearance
         navigationController?.navigationBar.scrollEdgeAppearance = appearance
         navigationController?.navigationBar.compactAppearance = appearance
+        
+        searchController.searchBar.tintColor = ToDoListAsset.Assets.primaryText.color
+        searchController.searchBar.searchTextField.textColor = ToDoListAsset.Assets.primaryText.color
     }
     
     func displayList(items: [TaskCollectionViewCellConfiguration]) {
@@ -123,6 +128,18 @@ extension HomeViewController: HomeViewInput {
             applicationActivities: nil
         )
         present(activityViewController, animated: true)
+    }
+}
+
+extension HomeViewController: UISearchResultsUpdating {
+    func updateSearchResults(for searchController: UISearchController) {
+        output?.searchTextDidChange(searchController.searchBar.text ?? "")
+    }
+}
+
+extension HomeViewController: UISearchBarDelegate {
+    func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
+        output?.searchTextDidChange("")
     }
 }
 

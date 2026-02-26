@@ -12,6 +12,7 @@ protocol HomeViewInput: AnyObject {
 
 protocol HomeViewOutput: AnyObject {
     func viewDidLoad()
+    func searchTextDidChange(_ text: String)
     func taskSelectionDidChange(taskID: String, isSelected: Bool)
     func checkButtonTapped(taskID: String)
     func didTapEdit(taskID: String)

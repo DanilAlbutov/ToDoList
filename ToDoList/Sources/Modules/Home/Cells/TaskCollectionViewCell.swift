@@ -29,24 +29,22 @@ final class TaskCollectionViewCell: UICollectionViewListCell {
     
     private let titleLabel: UILabel = {
         let label = UILabel()
-        label.font = .systemFont(ofSize: 17, weight: .semibold)
-        label.textColor = .white
         label.numberOfLines = 1
         return label
     }()
     
     private let descriptionLabel: UILabel = {
         let label = UILabel()
-        label.font = .systemFont(ofSize: 14)
-        label.textColor = .systemGray2
-        label.numberOfLines = 0
+        label.font = .systemFont(ofSize: 12, weight: .regular)
+        label.textColor = ToDoListAsset.Assets.secondaryText.color
+        label.numberOfLines = 2
         return label
     }()
     
     private let dateLabel: UILabel = {
         let label = UILabel()
-        label.font = .systemFont(ofSize: 13)
-        label.textColor = .systemGray3
+        label.font = .systemFont(ofSize: 12, weight: .regular)
+        label.textColor = ToDoListAsset.Assets.secondaryText.color
         return label
     }()
     
@@ -86,7 +84,7 @@ final class TaskCollectionViewCell: UICollectionViewListCell {
         checkButton.addTarget(self, action: #selector(handleCheckButtonTap), for: .touchUpInside)
         
         textStack.axis = .vertical
-        textStack.spacing = 4        
+        textStack.spacing = 6        
         textStack.addArrangedSubview(titleLabel)
         textStack.addArrangedSubview(descriptionLabel)
         textStack.addArrangedSubview(dateLabel)
@@ -116,15 +114,27 @@ final class TaskCollectionViewCell: UICollectionViewListCell {
     
     private func updateCompletedState(_ completed: Bool) {        
         checkButton.setCompleted(completed)
-        descriptionLabel.textColor = completed ? .systemGray : .systemGray2
+        descriptionLabel.textColor = .color(forState: !completed)
         titleLabel.setAttributedText(configuration?.title ?? "", withStrikethrough: completed)
+    }
+}
+
+fileprivate extension UIColor {    
+    static func color(forState isActive: Bool) -> UIColor {
+        return isActive 
+        ? ToDoListAsset.Assets.primaryText.color 
+        : ToDoListAsset.Assets.secondaryText.color
     }
 }
 
 fileprivate extension UILabel {
     func setAttributedText(_ text: String, withStrikethrough: Bool = false) {
+        let color: UIColor = withStrikethrough 
+        ? ToDoListAsset.Assets.secondaryText.color 
+        : ToDoListAsset.Assets.primaryText.color
         var attributes: [NSAttributedString.Key : Any] = [
-            .foregroundColor: UIColor.systemGray
+            .foregroundColor: color,
+            .font: UIFont.systemFont(ofSize: 16, weight: .semibold)
         ]
         if withStrikethrough {
             attributes[.strikethroughStyle] = NSUnderlineStyle.single.rawValue
