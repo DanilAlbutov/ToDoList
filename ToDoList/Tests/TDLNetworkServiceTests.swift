@@ -9,7 +9,7 @@ import Testing
 @testable import ToDoList
 import Alamofire
 
-final class MockNetworkService: NetworkServiceI {
+final class MockNetworkService: TDLNetworkServiceI {
     var lastRequest: URLRequestConvertible?
     var resultToReturn: Result<ToDoListResponse, AFError>?
     
@@ -17,10 +17,10 @@ final class MockNetworkService: NetworkServiceI {
         makeRequest(request: TDLRequest.getList, completion: completion)
     } 
     
-    func makeRequest<Response>(
+    func makeRequest<Response: Decodable>(
         request: URLRequestConvertible,
         completion: @escaping (Result<Response, AFError>) -> Void
-    ) where Response : Decodable {
+    ) {
         lastRequest = request
         if let resultToReturn = resultToReturn as? Result<Response, AFError> {
             completion(resultToReturn)
