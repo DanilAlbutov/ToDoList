@@ -50,8 +50,7 @@ final class CoreDataStack {
             (.createdAt, .dateAttributeType, true),
             (.completed, .booleanAttributeType, false),
             (.userID, .integer64AttributeType, false)
-        ]
-            
+        ]            
 
         let entity = NSEntityDescription()
         entity.name = CoreDataTaskItemsStorage.Entity.name

@@ -46,6 +46,7 @@ let project = Project(
             destinations: .iOS,
             product: .unitTests,
             bundleId: "dev.tuist.ToDoListTests",
+            deploymentTargets: .iOS("18.0"),
             infoPlist: .default,
             buildableFolders: [
                 "ToDoList/Tests"
