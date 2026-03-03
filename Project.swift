@@ -17,11 +17,7 @@ let project = Project(
                 ],
                 "UIUserInterfaceStyle": "Light",
             ]),
-            sources: [
-                "ToDoList/Sources/**",
-                "Derived/Sources/**",
-                "Generated/Sources/**"
-            ],
+            sources: ["ToDoList/Sources/**"],
             resources: ["ToDoList/Resources/**"],
             scripts: [
                 .pre(
@@ -31,7 +27,7 @@ let project = Project(
                         "$SRCROOT/Derived/Sources/TuistAssets+ToDoList.swift"
                     ],
                     outputPaths: [
-                        "$SRCROOT/Generated/Sources/UIColor+AppColors.generated.swift"
+                        "$SRCROOT/ToDoList/Sources/Extensions/UIColor+AppColors.generated.swift"
                     ]
                 )
             ],
