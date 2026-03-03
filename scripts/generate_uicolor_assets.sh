@@ -7,7 +7,7 @@ ASSETS_FILE_CANDIDATES=(
   "$SRCROOT/ToDoList/Derived/Sources/TuistAssets+ToDoList.swift"
   "${DERIVED_SOURCES_DIR:-}/TuistAssets+ToDoList.swift"
 )
-OUTPUT_FILE="$SRCROOT/Generated/Sources/UIColor+AppColors.generated.swift"
+OUTPUT_FILE="$SRCROOT/ToDoList/Sources/Extensions/UIColor+AppColors.generated.swift"
 
 ASSETS_FILE=""
 for candidate in "${ASSETS_FILE_CANDIDATES[@]}"; do
